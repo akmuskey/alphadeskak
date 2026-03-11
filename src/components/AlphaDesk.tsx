@@ -55,24 +55,24 @@ export default function AlphaDesk() {
         <TickerBar prices={prices} flashMap={flashMap} onSelect={handleSelectTicker} />
 
         {/* Main content */}
-        <div className="flex-1 flex overflow-hidden min-h-0 gap-2 p-2">
-          {/* Left sidebar */}
-          <div className="w-[260px] shrink-0 flex flex-col gap-2">
-            <div className="flex-1 min-h-0">
+        <div className="flex-1 flex overflow-hidden min-h-0 gap-2 p-2 md:flex-row flex-col md:overflow-hidden overflow-y-auto mobile-scroll">
+          {/* Center chart - first on mobile */}
+          <div className="flex-1 min-w-0 md:order-none order-1 min-h-[350px] md:min-h-0">
+            <CandlestickChart ticker={selectedTicker} />
+          </div>
+
+          {/* Left sidebar - reordered on mobile */}
+          <div className="md:w-[260px] w-full md:shrink-0 flex md:flex-col flex-col gap-2 md:order-first order-3">
+            <div className="md:flex-1 min-h-0 order-2">
               <PortfolioTracker prices={prices} />
             </div>
-            <div className="flex-1 min-h-0">
+            <div className="md:flex-1 min-h-0 order-1">
               <MarketMovers prices={prices} onSelect={handleSelectTicker} />
             </div>
           </div>
 
-          {/* Center chart */}
-          <div className="flex-1 min-w-0">
-            <CandlestickChart ticker={selectedTicker} />
-          </div>
-
           {/* Right sidebar */}
-          <div className="w-[280px] shrink-0">
+          <div className="md:w-[280px] w-full md:shrink-0 order-2">
             <OrderBook ticker={selectedTicker} price={prices[selectedTicker]} />
           </div>
         </div>
