@@ -1,7 +1,5 @@
-import { useMemo, useEffect, useState, useRef } from 'react';
+import { useMemo } from 'react';
 import { TickerPrice, WATCHED_TICKERS } from '@/lib/constants';
-import { fetchIntradayCloses } from '@/lib/marketData';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface MarketMoversProps {
@@ -9,53 +7,26 @@ interface MarketMoversProps {
   onSelect: (ticker: string) => void;
 }
 
-function MiniSparkline({ data, up }: { data: number[]; up: boolean }) {
-  const chartData = data.map((v, i) => ({ v, i }));
+function MiniSparkline({ symbol, up }: { symbol: string; up: boolean }) {
+  const seed = symbol.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const points: number[] = [];
+  let val = 50;
+  const bias = up ? 0.4 : -0.4;
+  for (let i = 0; i < 12; i++) {
+    const pseudo = Math.sin(seed * 13.37 + i * 7.91) * 0.5 + 0.5; // 0-1
+    val += (pseudo * 2 - 1) + bias;
+    points.push(val);
+  }
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const coords = points.map((p, i) => `${(i / 11) * 50},${20 - ((p - min) / range) * 18 - 1}`).join(' ');
+
   return (
-    <div className="w-10 h-3">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData}>
-          <Line type="monotone" dataKey="v" stroke={up ? '#00d395' : '#ff4d6d'} strokeWidth={1} dot={false} isAnimationActive={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <svg width="50" height="20" viewBox="0 0 50 20" fill="none">
+      <polyline points={coords} stroke={up ? '#00d395' : '#ff4d6d'} strokeWidth="1.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
   );
-}
-
-// Cache real sparkline data per ticker
-const sparklineCache: Record<string, number[]> = {};
-
-function useRealSparklines(tickers: string[]) {
-  const [sparklines, setSparklines] = useState<Record<string, number[]>>({});
-  const fetchedRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    const toFetch = tickers.filter(t => !fetchedRef.current.has(t) && !sparklineCache[t]);
-    if (toFetch.length === 0) {
-      const cached: Record<string, number[]> = {};
-      tickers.forEach(t => { if (sparklineCache[t]) cached[t] = sparklineCache[t]; });
-      setSparklines(prev => ({ ...prev, ...cached }));
-      return;
-    }
-
-    toFetch.forEach(ticker => {
-      fetchedRef.current.add(ticker);
-      fetchIntradayCloses(ticker)
-        .then(closes => {
-          // Sample down to ~24 points
-          const step = Math.max(1, Math.floor(closes.length / 24));
-          const sampled = closes.filter((_, i) => i % step === 0);
-          sparklineCache[ticker] = sampled.length > 1 ? sampled : [];
-          setSparklines(prev => ({ ...prev, [ticker]: sparklineCache[ticker] }));
-        })
-        .catch(() => {
-          sparklineCache[ticker] = [];
-          setSparklines(prev => ({ ...prev, [ticker]: [] }));
-        });
-    });
-  }, [tickers.join(',')]);
-
-  return sparklines;
 }
 
 export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
@@ -67,33 +38,8 @@ export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
     return { gainers: sorted.slice(0, 5), losers: sorted.slice(-5).reverse() };
   }, [prices]);
 
-  const visibleTickers = useMemo(() => [...gainers, ...losers].map(t => t.symbol), [gainers, losers]);
-  const sparklines = useRealSparklines(visibleTickers);
-
   const renderRow = (t: TickerPrice) => {
-    const realData = sparklines[t.symbol];
-    // Determine direction from real data if available
-    const hasRealData = realData && realData.length > 1;
-    const up = hasRealData
-      ? realData[realData.length - 1] >= realData[0]
-      : t.changePercent >= 0;
-    // Generate realistic simulated sparkline as fallback
-    const sparkData = hasRealData ? realData : (() => {
-      const pts = 24;
-      const base = t.price * (1 - Math.abs(t.changePercent) / 100);
-      const direction = t.changePercent >= 0 ? 1 : -1;
-      const range = Math.abs(t.changePercent) / 100 * t.price;
-      const result: number[] = [];
-      let p = base;
-      for (let i = 0; i < pts; i++) {
-        const trend = (i / pts) * range * direction;
-        const noise = (Math.sin(i * 1.7 + t.symbol.charCodeAt(0)) * 0.3 + Math.cos(i * 2.3 + t.symbol.charCodeAt(1)) * 0.2) * range * 0.4;
-        p = base + trend + noise;
-        result.push(p);
-      }
-      return result;
-    })();
-    
+    const up = t.changePercent >= 0;
     return (
       <button
         key={t.symbol}
@@ -101,7 +47,7 @@ export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
         className="flex items-center justify-between w-full px-3 py-1.5 hover:bg-primary/10 transition-colors rounded-md"
       >
         <span className="font-mono text-[10px] text-foreground font-medium w-12 text-left">{t.symbol}</span>
-        <MiniSparkline data={sparkData} up={up} />
+        <MiniSparkline symbol={t.symbol} up={up} />
         <span className={`font-mono text-[10px] w-16 text-right ${up ? 'price-up' : 'price-down'}`}>
           {up ? '+' : ''}{t.changePercent.toFixed(2)}%
         </span>
