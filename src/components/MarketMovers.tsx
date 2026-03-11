@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { TickerPrice, WATCHED_TICKERS } from '@/lib/constants';
+import { fetchIntradayCloses } from '@/lib/marketData';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -21,6 +22,42 @@ function MiniSparkline({ data, up }: { data: number[]; up: boolean }) {
   );
 }
 
+// Cache real sparkline data per ticker
+const sparklineCache: Record<string, number[]> = {};
+
+function useRealSparklines(tickers: string[]) {
+  const [sparklines, setSparklines] = useState<Record<string, number[]>>({});
+  const fetchedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const toFetch = tickers.filter(t => !fetchedRef.current.has(t) && !sparklineCache[t]);
+    if (toFetch.length === 0) {
+      const cached: Record<string, number[]> = {};
+      tickers.forEach(t => { if (sparklineCache[t]) cached[t] = sparklineCache[t]; });
+      setSparklines(prev => ({ ...prev, ...cached }));
+      return;
+    }
+
+    toFetch.forEach(ticker => {
+      fetchedRef.current.add(ticker);
+      fetchIntradayCloses(ticker)
+        .then(closes => {
+          // Sample down to ~24 points
+          const step = Math.max(1, Math.floor(closes.length / 24));
+          const sampled = closes.filter((_, i) => i % step === 0);
+          sparklineCache[ticker] = sampled.length > 1 ? sampled : [];
+          setSparklines(prev => ({ ...prev, [ticker]: sparklineCache[ticker] }));
+        })
+        .catch(() => {
+          sparklineCache[ticker] = [];
+          setSparklines(prev => ({ ...prev, [ticker]: [] }));
+        });
+    });
+  }, [tickers.join(',')]);
+
+  return sparklines;
+}
+
 export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
   const { gainers, losers } = useMemo(() => {
     const sorted = WATCHED_TICKERS
@@ -30,8 +67,19 @@ export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
     return { gainers: sorted.slice(0, 5), losers: sorted.slice(-5).reverse() };
   }, [prices]);
 
+  const visibleTickers = useMemo(() => [...gainers, ...losers].map(t => t.symbol), [gainers, losers]);
+  const sparklines = useRealSparklines(visibleTickers);
+
   const renderRow = (t: TickerPrice) => {
-    const up = t.changePercent >= 0;
+    const realData = sparklines[t.symbol];
+    // Determine direction from real data if available
+    const hasRealData = realData && realData.length > 1;
+    const up = hasRealData
+      ? realData[realData.length - 1] >= realData[0]
+      : t.changePercent >= 0;
+    // Flat line fallback: use current price repeated
+    const sparkData = hasRealData ? realData : [t.price, t.price];
+    
     return (
       <button
         key={t.symbol}
@@ -39,7 +87,7 @@ export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
         className="flex items-center justify-between w-full px-3 py-1.5 hover:bg-primary/10 transition-colors rounded-md"
       >
         <span className="font-mono text-[10px] text-foreground font-medium w-12 text-left">{t.symbol}</span>
-        <MiniSparkline data={t.history} up={up} />
+        <MiniSparkline data={sparkData} up={up} />
         <span className={`font-mono text-[10px] w-16 text-right ${up ? 'price-up' : 'price-down'}`}>
           {up ? '+' : ''}{t.changePercent.toFixed(2)}%
         </span>
