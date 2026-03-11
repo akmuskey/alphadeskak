@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, CandlestickData, HistogramData, LineData, Time } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, CandlestickSeries, HistogramSeries, LineSeries, Time, CandlestickData, HistogramData } from 'lightweight-charts';
 import { OHLCVBar, Timeframe } from '@/lib/constants';
 import { useHistoricalData } from '@/hooks/useHistoricalData';
 import { calculateSMA, calculateBollingerBands } from '@/lib/indicators';
@@ -13,15 +13,14 @@ interface CandlestickChartProps {
 export default function CandlestickChart({ ticker }: CandlestickChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const volumeRef = useRef<ISeriesApi<'Histogram'> | null>(null);
-  const overlayRefs = useRef<ISeriesApi<'Line'>[]>([]);
+  const candleRef = useRef<ISeriesApi<typeof CandlestickSeries> | null>(null);
+  const volumeRef = useRef<ISeriesApi<typeof HistogramSeries> | null>(null);
+  const overlayRefs = useRef<ISeriesApi<typeof LineSeries>[]>([]);
 
   const [timeframe, setTimeframe] = useState<Timeframe>('3M');
   const [indicators, setIndicators] = useState({ sma20: false, sma50: false, bollinger: false });
   const { data, loading } = useHistoricalData(ticker, timeframe);
 
-  // Create chart
   useEffect(() => {
     if (!containerRef.current) return;
     
@@ -51,7 +50,7 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
       },
     });
 
-    const candleSeries = chart.addCandlestickSeries({
+    const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#00ff9d',
       downColor: '#ff3b3b',
       borderUpColor: '#00ff9d',
@@ -60,7 +59,7 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
       wickDownColor: '#ff3b3b88',
     });
 
-    const volumeSeries = chart.addHistogramSeries({
+    const volumeSeries = chart.addSeries(HistogramSeries, {
       priceFormat: { type: 'volume' },
       priceScaleId: '',
     });
@@ -91,7 +90,6 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
     };
   }, []);
 
-  // Update data
   useEffect(() => {
     if (!candleRef.current || !volumeRef.current || !data.length) return;
 
@@ -114,11 +112,9 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
     chartRef.current?.timeScale().fitContent();
   }, [data]);
 
-  // Update overlays
   useEffect(() => {
     if (!chartRef.current || !data.length) return;
 
-    // Remove old overlays
     overlayRefs.current.forEach(s => {
       try { chartRef.current?.removeSeries(s); } catch {}
     });
@@ -126,22 +122,22 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
 
     if (indicators.sma20) {
       const smaData = calculateSMA(data, 20);
-      const series = chartRef.current.addLineSeries({ color: '#00ff9d', lineWidth: 1, priceLineVisible: false });
+      const series = chartRef.current.addSeries(LineSeries, { color: '#00ff9d', lineWidth: 1, priceLineVisible: false });
       series.setData(smaData.map(d => ({ time: d.time as Time, value: d.value })));
       overlayRefs.current.push(series);
     }
 
     if (indicators.sma50) {
       const smaData = calculateSMA(data, 50);
-      const series = chartRef.current.addLineSeries({ color: '#ffcc00', lineWidth: 1, priceLineVisible: false });
+      const series = chartRef.current.addSeries(LineSeries, { color: '#ffcc00', lineWidth: 1, priceLineVisible: false });
       series.setData(smaData.map(d => ({ time: d.time as Time, value: d.value })));
       overlayRefs.current.push(series);
     }
 
     if (indicators.bollinger) {
       const bb = calculateBollingerBands(data, 20, 2);
-      const upper = chartRef.current.addLineSeries({ color: '#3b82f6', lineWidth: 1, priceLineVisible: false, lineStyle: 2 });
-      const lower = chartRef.current.addLineSeries({ color: '#3b82f6', lineWidth: 1, priceLineVisible: false, lineStyle: 2 });
+      const upper = chartRef.current.addSeries(LineSeries, { color: '#3b82f6', lineWidth: 1, priceLineVisible: false, lineStyle: 2 });
+      const lower = chartRef.current.addSeries(LineSeries, { color: '#3b82f6', lineWidth: 1, priceLineVisible: false, lineStyle: 2 });
       upper.setData(bb.upper.map(d => ({ time: d.time as Time, value: d.value })));
       lower.setData(bb.lower.map(d => ({ time: d.time as Time, value: d.value })));
       overlayRefs.current.push(upper, lower);
