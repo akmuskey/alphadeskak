@@ -32,7 +32,6 @@ function useRealSparklines(tickers: string[]) {
   useEffect(() => {
     const toFetch = tickers.filter(t => !fetchedRef.current.has(t) && !sparklineCache[t]);
     if (toFetch.length === 0) {
-      // All cached, just set from cache
       const cached: Record<string, number[]> = {};
       tickers.forEach(t => { if (sparklineCache[t]) cached[t] = sparklineCache[t]; });
       setSparklines(prev => ({ ...prev, ...cached }));
@@ -41,19 +40,13 @@ function useRealSparklines(tickers: string[]) {
 
     toFetch.forEach(ticker => {
       fetchedRef.current.add(ticker);
-      fetchHistoricalData(ticker, '1D')
-        .then(bars => {
-          // Use close prices; if we got mock/random data (no real API), use flat line
-          // Real data will have varying prices; detect mock by checking if bars exist
-          const closes = bars.map(b => b.close);
-          // Sample down to ~24 points for sparkline
+      fetchIntradayCloses(ticker)
+        .then(closes => {
+          // Sample down to ~24 points
           const step = Math.max(1, Math.floor(closes.length / 24));
           const sampled = closes.filter((_, i) => i % step === 0);
-          // Check if data looks real (has some variance) - flat line fallback if all same
-          const allSame = sampled.length > 0 && sampled.every(v => v === sampled[0]);
-          const result = allSame ? [] : sampled;
-          sparklineCache[ticker] = result;
-          setSparklines(prev => ({ ...prev, [ticker]: result }));
+          sparklineCache[ticker] = sampled.length > 1 ? sampled : [];
+          setSparklines(prev => ({ ...prev, [ticker]: sparklineCache[ticker] }));
         })
         .catch(() => {
           sparklineCache[ticker] = [];
