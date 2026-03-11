@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { TickerPrice, WATCHED_TICKERS } from '@/lib/constants';
-import { fetchHistoricalData } from '@/lib/marketData';
+import { fetchIntradayCloses } from '@/lib/marketData';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
