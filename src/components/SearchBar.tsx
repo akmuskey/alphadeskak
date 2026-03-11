@@ -39,7 +39,7 @@ export default function SearchBar({ onSearch, currentTicker }: SearchBarProps) {
           ref={inputRef}
           type="text"
           placeholder={`Search ticker... (/) — ${currentTicker}`}
-          className="font-mono text-xs bg-secondary border border-border pl-7 pr-3 py-1.5 w-64 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+          className="font-mono text-xs bg-secondary border border-border pl-7 pr-3 py-1.5 w-64 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary rounded-lg"
         />
       </div>
     </form>

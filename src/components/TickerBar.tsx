@@ -16,7 +16,7 @@ function MiniSparkline({ data, up }: { data: number[]; up: boolean }) {
           <Line
             type="monotone"
             dataKey="v"
-            stroke={up ? 'hsl(155, 100%, 50%)' : 'hsl(0, 100%, 60%)'}
+            stroke={up ? '#00d395' : '#ff4d6d'}
             strokeWidth={1}
             dot={false}
             isAnimationActive={false}
@@ -29,10 +29,10 @@ function MiniSparkline({ data, up }: { data: number[]; up: boolean }) {
 
 export default function TickerBar({ prices, flashMap, onSelect }: TickerBarProps) {
   const items = TICKER_BAR_SYMBOLS.map(sym => prices[sym]).filter(Boolean);
-  const doubled = [...items, ...items]; // duplicate for seamless scroll
+  const doubled = [...items, ...items];
 
   return (
-    <div className="w-full bg-card border-b border-border overflow-hidden h-9 flex items-center">
+    <div className="w-full border-b overflow-hidden h-9 flex items-center" style={{ background: 'rgba(19, 20, 43, 0.6)', backdropFilter: 'blur(20px)', borderColor: 'rgba(123, 97, 255, 0.2)' }}>
       <div className="flex animate-marquee whitespace-nowrap">
         {doubled.map((t, i) => {
           const up = t.changePercent >= 0;
@@ -41,9 +41,10 @@ export default function TickerBar({ prices, flashMap, onSelect }: TickerBarProps
             <button
               key={`${t.symbol}-${i}`}
               onClick={() => onSelect(t.symbol)}
-              className={`inline-flex items-center gap-2 px-4 font-mono text-xs hover:bg-secondary transition-colors ${
+              className={`inline-flex items-center gap-2 px-4 font-mono text-xs hover:bg-primary/10 transition-colors ${
                 flash === 'up' ? 'flash-green' : flash === 'down' ? 'flash-red' : ''
               }`}
+              style={{ borderRight: '1px solid rgba(123, 97, 255, 0.3)' }}
             >
               <span className="text-foreground font-medium">{t.symbol}</span>
               <span className={up ? 'price-up' : 'price-down'}>

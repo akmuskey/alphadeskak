@@ -7,9 +7,9 @@ interface IndicatorTogglesProps {
 
 export default function IndicatorToggles({ sma20, sma50, bollinger, onToggle }: IndicatorTogglesProps) {
   const items = [
-    { key: 'sma20' as const, label: 'SMA 20', active: sma20, color: 'hsl(155, 100%, 50%)' },
-    { key: 'sma50' as const, label: 'SMA 50', active: sma50, color: 'hsl(45, 100%, 60%)' },
-    { key: 'bollinger' as const, label: 'BB', active: bollinger, color: 'hsl(210, 100%, 60%)' },
+    { key: 'sma20' as const, label: 'SMA 20', active: sma20, color: '#7b61ff' },
+    { key: 'sma50' as const, label: 'SMA 50', active: sma50, color: '#00d4ff' },
+    { key: 'bollinger' as const, label: 'BB', active: bollinger, color: '#7b61ff' },
   ];
 
   return (
@@ -18,10 +18,10 @@ export default function IndicatorToggles({ sma20, sma50, bollinger, onToggle }: 
         <button
           key={item.key}
           onClick={() => onToggle(item.key)}
-          className={`font-mono text-xs px-2.5 py-1 border transition-colors ${
+          className={`font-mono text-xs px-2.5 py-1 border transition-all rounded-lg ${
             item.active
               ? 'border-border text-foreground'
-              : 'border-border text-muted-foreground hover:text-foreground bg-secondary'
+              : 'border-border text-muted-foreground hover:text-foreground hover:shadow-[0_0_15px_rgba(123,97,255,0.4)] bg-secondary'
           }`}
           style={item.active ? { borderColor: item.color, color: item.color } : {}}
         >

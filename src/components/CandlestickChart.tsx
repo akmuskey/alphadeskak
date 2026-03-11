@@ -26,37 +26,37 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
     
     const chart = createChart(containerRef.current, {
       layout: {
-        background: { color: '#0a0a0f' },
-        textColor: '#666680',
+        background: { color: 'transparent' },
+        textColor: '#8892b0',
         fontFamily: 'JetBrains Mono, monospace',
         fontSize: 10,
       },
       grid: {
-        vertLines: { color: '#1e1e2e' },
-        horzLines: { color: '#1e1e2e' },
+        vertLines: { color: 'rgba(123, 97, 255, 0.08)' },
+        horzLines: { color: 'rgba(123, 97, 255, 0.08)' },
       },
       crosshair: {
         mode: 0,
-        vertLine: { color: '#00ff9d33', width: 1, style: 2, labelBackgroundColor: '#111118' },
-        horzLine: { color: '#00ff9d33', width: 1, style: 2, labelBackgroundColor: '#111118' },
+        vertLine: { color: 'rgba(123, 97, 255, 0.3)', width: 1, style: 2, labelBackgroundColor: 'rgba(19, 20, 43, 0.9)' },
+        horzLine: { color: 'rgba(123, 97, 255, 0.3)', width: 1, style: 2, labelBackgroundColor: 'rgba(19, 20, 43, 0.9)' },
       },
       rightPriceScale: {
-        borderColor: '#1e1e2e',
+        borderColor: 'rgba(123, 97, 255, 0.2)',
         scaleMargins: { top: 0.1, bottom: 0.25 },
       },
       timeScale: {
-        borderColor: '#1e1e2e',
+        borderColor: 'rgba(123, 97, 255, 0.2)',
         timeVisible: true,
       },
     });
 
     const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: '#00ff9d',
-      downColor: '#ff3b3b',
-      borderUpColor: '#00ff9d',
-      borderDownColor: '#ff3b3b',
-      wickUpColor: '#00ff9d88',
-      wickDownColor: '#ff3b3b88',
+      upColor: '#00d395',
+      downColor: '#ff4d6d',
+      borderUpColor: '#00d395',
+      borderDownColor: '#ff4d6d',
+      wickUpColor: '#00d39588',
+      wickDownColor: '#ff4d6d88',
     });
 
     const volumeSeries = chart.addSeries(HistogramSeries, {
@@ -104,7 +104,7 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
     const volumes: HistogramData[] = data.map(b => ({
       time: b.time as Time,
       value: b.volume,
-      color: b.close >= b.open ? '#00ff9d33' : '#ff3b3b33',
+      color: b.close >= b.open ? 'rgba(0, 211, 149, 0.2)' : 'rgba(255, 77, 109, 0.2)',
     }));
 
     candleRef.current.setData(candles);
@@ -122,22 +122,22 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
 
     if (indicators.sma20) {
       const smaData = calculateSMA(data, 20);
-      const series = chartRef.current.addSeries(LineSeries, { color: '#00ff9d', lineWidth: 1, priceLineVisible: false });
+      const series = chartRef.current.addSeries(LineSeries, { color: '#7b61ff', lineWidth: 1, priceLineVisible: false });
       series.setData(smaData.map(d => ({ time: d.time as Time, value: d.value })));
       overlayRefs.current.push(series);
     }
 
     if (indicators.sma50) {
       const smaData = calculateSMA(data, 50);
-      const series = chartRef.current.addSeries(LineSeries, { color: '#ffcc00', lineWidth: 1, priceLineVisible: false });
+      const series = chartRef.current.addSeries(LineSeries, { color: '#00d4ff', lineWidth: 1, priceLineVisible: false });
       series.setData(smaData.map(d => ({ time: d.time as Time, value: d.value })));
       overlayRefs.current.push(series);
     }
 
     if (indicators.bollinger) {
       const bb = calculateBollingerBands(data, 20, 2);
-      const upper = chartRef.current.addSeries(LineSeries, { color: '#3b82f6', lineWidth: 1, priceLineVisible: false, lineStyle: 2 });
-      const lower = chartRef.current.addSeries(LineSeries, { color: '#3b82f6', lineWidth: 1, priceLineVisible: false, lineStyle: 2 });
+      const upper = chartRef.current.addSeries(LineSeries, { color: '#7b61ff', lineWidth: 1, priceLineVisible: false, lineStyle: 2 });
+      const lower = chartRef.current.addSeries(LineSeries, { color: '#7b61ff', lineWidth: 1, priceLineVisible: false, lineStyle: 2 });
       upper.setData(bb.upper.map(d => ({ time: d.time as Time, value: d.value })));
       lower.setData(bb.lower.map(d => ({ time: d.time as Time, value: d.value })));
       overlayRefs.current.push(upper, lower);
@@ -164,7 +164,7 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
       </div>
       <div className="flex-1 relative">
         {loading && (
-          <div className="absolute inset-0 z-10 bg-card flex items-center justify-center">
+          <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ background: 'rgba(19, 20, 43, 0.8)' }}>
             <div className="font-mono text-xs text-muted-foreground animate-pulse">Loading {ticker} data...</div>
           </div>
         )}
