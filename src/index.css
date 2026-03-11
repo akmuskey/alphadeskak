@@ -131,12 +131,13 @@
     background: rgba(19, 20, 43, 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(123, 97, 255, 0.2);
+    border: 1px solid rgba(123, 97, 255, 0.3);
     border-radius: 12px;
+    box-shadow: 0 0 30px rgba(123, 97, 255, 0.08);
     transition: box-shadow 0.3s ease;
   }
   .panel:hover {
-    box-shadow: 0 0 15px rgba(123, 97, 255, 0.4);
+    box-shadow: 0 0 20px rgba(123, 97, 255, 0.4);
   }
 
   .price-up {

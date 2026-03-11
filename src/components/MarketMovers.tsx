@@ -54,15 +54,15 @@ export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
       </div>
       
       <div className="flex-1 overflow-auto">
-        <div className="px-3 py-1 flex items-center gap-1.5 border-b border-border">
-          <TrendingUp className="w-3 h-3 text-terminal-green" />
-          <span className="font-mono text-[10px] text-terminal-green">GAINERS</span>
+        <div className="px-3 py-1 flex items-center gap-1.5 border-b border-border" style={{ boxShadow: '0 0 10px rgba(0, 211, 149, 0.15)' }}>
+          <TrendingUp className="w-3 h-3" style={{ color: '#00d395' }} />
+          <span className="font-mono text-[10px]" style={{ color: '#00d395' }}>GAINERS</span>
         </div>
         {gainers.map(renderRow)}
 
-        <div className="px-3 py-1 flex items-center gap-1.5 border-b border-border mt-1">
-          <TrendingDown className="w-3 h-3 text-destructive" />
-          <span className="font-mono text-[10px] text-destructive">LOSERS</span>
+        <div className="px-3 py-1 flex items-center gap-1.5 border-b border-border mt-1" style={{ boxShadow: '0 0 10px rgba(255, 77, 109, 0.15)' }}>
+          <TrendingDown className="w-3 h-3" style={{ color: '#ff4d6d' }} />
+          <span className="font-mono text-[10px]" style={{ color: '#ff4d6d' }}>LOSERS</span>
         </div>
         {losers.map(renderRow)}
       </div>

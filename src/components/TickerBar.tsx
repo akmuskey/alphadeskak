@@ -44,7 +44,7 @@ export default function TickerBar({ prices, flashMap, onSelect }: TickerBarProps
               className={`inline-flex items-center gap-2 px-4 font-mono text-xs hover:bg-primary/10 transition-colors ${
                 flash === 'up' ? 'flash-green' : flash === 'down' ? 'flash-red' : ''
               }`}
-              style={{ borderRight: '1px solid rgba(123, 97, 255, 0.3)' }}
+              style={{ borderRight: '1px solid rgba(123, 97, 255, 0.5)' }}
             >
               <span className="text-foreground font-medium">{t.symbol}</span>
               <span className={up ? 'price-up' : 'price-down'}>

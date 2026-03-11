@@ -35,7 +35,7 @@ export default function AlphaDesk() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden relative">
-      {/* Aurora background */}
+      {/* Aurora background - animated purple/cyan blobs */}
       <div className="aurora-bg" />
       {/* Dot grid overlay */}
       <div className="dot-grid-overlay" />

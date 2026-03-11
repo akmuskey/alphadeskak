@@ -53,13 +53,14 @@ export default function OrderBook({ ticker, price }: OrderBookProps) {
           {book.bids.map((level, i) => (
             <div key={`b-${i}`} className="flex items-center h-5 relative">
               <div
-                className="absolute right-0 top-0 h-full opacity-20"
+                className="absolute right-0 top-0 h-full"
                 style={{
                   width: `${(level.size / maxSize) * 100}%`,
-                  backgroundColor: '#00d395',
+                  backgroundColor: 'rgba(0, 211, 149, 0.3)',
+                  boxShadow: '0 0 8px rgba(0, 211, 149, 0.2)'
                 }}
               />
-              <span className="w-16 text-right price-up relative z-10">{level.price.toFixed(decimals)}</span>
+              <span className="w-16 text-right relative z-10" style={{ color: '#00d395' }}>{level.price.toFixed(decimals)}</span>
               <span className="flex-1 text-right text-muted-foreground relative z-10">{level.size.toLocaleString()}</span>
             </div>
           ))}
