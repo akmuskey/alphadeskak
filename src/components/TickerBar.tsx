@@ -1,5 +1,4 @@
 import { TickerPrice, TICKER_BAR_SYMBOLS } from '@/lib/constants';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
 interface TickerBarProps {
   prices: Record<string, TickerPrice>;
@@ -7,23 +6,25 @@ interface TickerBarProps {
   onSelect: (ticker: string) => void;
 }
 
-function MiniSparkline({ data, up }: { data: number[]; up: boolean }) {
-  const chartData = data.map((v, i) => ({ v, i }));
+function MiniSparkline({ symbol, up }: { symbol: string; up: boolean }) {
+  const seed = symbol.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const points: number[] = [];
+  let val = 50;
+  const bias = up ? 0.4 : -0.4;
+  for (let i = 0; i < 8; i++) {
+    const pseudo = Math.sin(seed * 13.37 + i * 7.91) * 0.5 + 0.5;
+    val += (pseudo * 2 - 1) + bias;
+    points.push(val);
+  }
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const coords = points.map((p, i) => `${(i / 7) * 40},${14 - ((p - min) / range) * 12 - 1}`).join(' ');
+
   return (
-    <div className="w-12 h-4 inline-block">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData}>
-          <Line
-            type="monotone"
-            dataKey="v"
-            stroke={up ? '#00d395' : '#ff4d6d'}
-            strokeWidth={1}
-            dot={false}
-            isAnimationActive={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <svg width="40" height="16" viewBox="0 0 40 16" fill="none" className="inline-block">
+      <polyline points={coords} stroke={up ? '#00d395' : '#ff4d6d'} strokeWidth="1.5" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
   );
 }
 
@@ -47,13 +48,13 @@ export default function TickerBar({ prices, flashMap, onSelect }: TickerBarProps
               style={{ borderRight: '1px solid rgba(123, 97, 255, 0.5)' }}
             >
               <span className="text-foreground font-medium">{t.symbol}</span>
+              <MiniSparkline symbol={t.symbol} up={up} />
               <span className={up ? 'price-up' : 'price-down'}>
                 {t.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               <span className={`${up ? 'price-up' : 'price-down'} text-[10px]`}>
                 {up ? '+' : ''}{t.changePercent.toFixed(2)}%
               </span>
-              <MiniSparkline data={t.history} up={up} />
             </button>
           );
         })}
