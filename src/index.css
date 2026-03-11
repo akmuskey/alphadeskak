@@ -72,8 +72,8 @@
     content: '';
     position: absolute;
     border-radius: 50%;
-    filter: blur(120px);
-    opacity: 0.4;
+    filter: blur(150px);
+    opacity: 0.5;
     animation: auroraMove 12s ease-in-out infinite alternate;
   }
   .aurora-bg::before {
