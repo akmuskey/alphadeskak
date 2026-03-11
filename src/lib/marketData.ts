@@ -46,6 +46,27 @@ export async function fetchHistoricalData(ticker: string, timeframe: Timeframe):
   }
 }
 
+export async function fetchIntradayCloses(ticker: string): Promise<number[]> {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=1d&interval=5m`;
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) return [];
+    const json = await res.json();
+    const result = json?.chart?.result?.[0];
+    if (!result) return [];
+    const closes: number[] = [];
+    const quote = result.indicators?.quote?.[0];
+    if (!quote?.close) return [];
+    for (let i = 0; i < quote.close.length; i++) {
+      if (quote.close[i] != null) closes.push(quote.close[i]);
+    }
+    return closes;
+  } catch {
+    return [];
+  }
+}
+
 function generateMockData(ticker: string, timeframe: Timeframe): OHLCVBar[] {
   const { SEED_PRICES } = require('./constants');
   const basePrice = SEED_PRICES[ticker] || 100;
