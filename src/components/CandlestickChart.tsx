@@ -13,9 +13,9 @@ interface CandlestickChartProps {
 export default function CandlestickChart({ ticker }: CandlestickChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const candleRef = useRef<ISeriesApi<typeof CandlestickSeries> | null>(null);
-  const volumeRef = useRef<ISeriesApi<typeof HistogramSeries> | null>(null);
-  const overlayRefs = useRef<ISeriesApi<typeof LineSeries>[]>([]);
+  const candleRef = useRef<any>(null);
+  const volumeRef = useRef<any>(null);
+  const overlayRefs = useRef<any[]>([]);
 
   const [timeframe, setTimeframe] = useState<Timeframe>('3M');
   const [indicators, setIndicators] = useState({ sma20: false, sma50: false, bollinger: false });
