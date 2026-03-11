@@ -1,14 +1,16 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useCallback } from 'react';
+import LoadingScreen from '@/components/LoadingScreen';
+import AlphaDesk from '@/components/AlphaDesk';
 
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const [loaded, setLoaded] = useState(false);
+  const handleComplete = useCallback(() => setLoaded(true), []);
+
+  if (!loaded) {
+    return <LoadingScreen onComplete={handleComplete} />;
+  }
+
+  return <AlphaDesk />;
 };
 
 export default Index;
