@@ -12,7 +12,7 @@ export default function Logo() {
         <polygon points="12,8 18,20 6,20" fill="#0d0e1a" />
         <polygon points="12,12 16,20 8,20" fill="url(#logoGrad)" opacity="0.6" />
       </svg>
-      <span className="font-mono text-xs tracking-[0.35em] font-medium text-gradient-purple">
+      <span className="font-mono text-xs tracking-[0.35em] font-medium" style={{ background: 'linear-gradient(135deg, #7b61ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
         ALPHADESK
       </span>
     </div>
