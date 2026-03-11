@@ -9,8 +9,8 @@ interface PortfolioTrackerProps {
 }
 
 const DONUT_COLORS = [
-  'hsl(155, 100%, 50%)', 'hsl(210, 100%, 60%)', 'hsl(45, 100%, 60%)',
-  'hsl(280, 100%, 60%)', 'hsl(0, 100%, 60%)', 'hsl(180, 100%, 50%)',
+  '#7b61ff', '#00d4ff', '#00d395',
+  '#ff4d6d', '#ffcc00', '#ff8c42',
 ];
 
 export default function PortfolioTracker({ prices }: PortfolioTrackerProps) {
@@ -45,7 +45,7 @@ export default function PortfolioTracker({ prices }: PortfolioTrackerProps) {
     <div className="panel flex flex-col h-full">
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span className="font-mono text-xs text-foreground font-medium">PORTFOLIO</span>
-        <button onClick={() => setShowForm(!showForm)} className="text-primary hover:text-primary/80">
+        <button onClick={() => setShowForm(!showForm)} className="text-primary hover:text-primary/80 hover:shadow-[0_0_15px_rgba(123,97,255,0.4)] transition-all rounded-full p-0.5">
           <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -54,19 +54,19 @@ export default function PortfolioTracker({ prices }: PortfolioTrackerProps) {
         <form onSubmit={handleAdd} className="p-2 border-b border-border space-y-1">
           <input
             value={form.ticker} onChange={e => setForm({ ...form, ticker: e.target.value })}
-            placeholder="Ticker" className="w-full font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground"
+            placeholder="Ticker" className="w-full font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
           />
           <div className="flex gap-1">
             <input
               value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })}
-              placeholder="Qty" type="number" className="w-1/2 font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground"
+              placeholder="Qty" type="number" className="w-1/2 font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
             />
             <input
               value={form.avgPrice} onChange={e => setForm({ ...form, avgPrice: e.target.value })}
-              placeholder="Avg $" type="number" step="0.01" className="w-1/2 font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground"
+              placeholder="Avg $" type="number" step="0.01" className="w-1/2 font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
             />
           </div>
-          <button type="submit" className="w-full font-mono text-[10px] bg-primary text-primary-foreground py-1 hover:bg-primary/90">ADD</button>
+          <button type="submit" className="w-full font-mono text-[10px] text-white py-1 rounded-md active-pill border-0">ADD</button>
         </form>
       )}
 
@@ -103,7 +103,7 @@ export default function PortfolioTracker({ prices }: PortfolioTrackerProps) {
 
       <div className="flex-1 overflow-auto">
         {portfolioData.map(pos => (
-          <div key={pos.id} className="flex items-center justify-between px-3 py-1.5 border-b border-border hover:bg-secondary/50 group">
+          <div key={pos.id} className="flex items-center justify-between px-3 py-1.5 border-b border-border hover:bg-primary/10 group transition-colors">
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[10px] text-foreground font-medium">{pos.ticker}</span>

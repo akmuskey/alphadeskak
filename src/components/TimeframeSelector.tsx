@@ -12,10 +12,10 @@ export default function TimeframeSelector({ selected, onChange }: TimeframeSelec
         <button
           key={tf}
           onClick={() => onChange(tf)}
-          className={`font-mono text-xs px-2.5 py-1 border transition-colors ${
+          className={`font-mono text-xs px-2.5 py-1 border transition-all ${
             selected === tf
-              ? 'bg-primary text-primary-foreground border-primary'
-              : 'bg-secondary text-muted-foreground border-border hover:text-foreground'
+              ? 'active-pill border-transparent text-white'
+              : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:shadow-[0_0_15px_rgba(123,97,255,0.4)] rounded-lg'
           }`}
         >
           {tf}

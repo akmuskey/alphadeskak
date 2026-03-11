@@ -24,14 +24,14 @@ export default function KeyboardShortcuts() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="bg-card border-border font-mono max-w-sm">
+      <DialogContent className="font-mono max-w-sm border-border" style={{ background: 'rgba(19, 20, 43, 0.9)', backdropFilter: 'blur(20px)', borderColor: 'rgba(123, 97, 255, 0.2)', borderRadius: '12px' }}>
         <DialogHeader>
           <DialogTitle className="font-mono text-sm text-foreground tracking-wider">KEYBOARD SHORTCUTS</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
           {SHORTCUTS.map(s => (
             <div key={s.key} className="flex items-center justify-between py-1 border-b border-border">
-              <kbd className="text-xs bg-secondary px-2 py-0.5 text-primary border border-border">{s.key}</kbd>
+              <kbd className="text-xs bg-secondary px-2 py-0.5 text-primary border border-border rounded-md">{s.key}</kbd>
               <span className="text-xs text-muted-foreground">{s.desc}</span>
             </div>
           ))}

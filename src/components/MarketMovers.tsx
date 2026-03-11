@@ -14,7 +14,7 @@ function MiniSparkline({ data, up }: { data: number[]; up: boolean }) {
     <div className="w-10 h-3">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData}>
-          <Line type="monotone" dataKey="v" stroke={up ? 'hsl(155, 100%, 50%)' : 'hsl(0, 100%, 60%)'} strokeWidth={1} dot={false} isAnimationActive={false} />
+          <Line type="monotone" dataKey="v" stroke={up ? '#00d395' : '#ff4d6d'} strokeWidth={1} dot={false} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -36,7 +36,7 @@ export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
       <button
         key={t.symbol}
         onClick={() => onSelect(t.symbol)}
-        className="flex items-center justify-between w-full px-3 py-1.5 hover:bg-secondary/50 transition-colors"
+        className="flex items-center justify-between w-full px-3 py-1.5 hover:bg-primary/10 transition-colors rounded-md"
       >
         <span className="font-mono text-[10px] text-foreground font-medium w-12 text-left">{t.symbol}</span>
         <MiniSparkline data={t.history} up={up} />
@@ -55,8 +55,8 @@ export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
       
       <div className="flex-1 overflow-auto">
         <div className="px-3 py-1 flex items-center gap-1.5 border-b border-border">
-          <TrendingUp className="w-3 h-3 text-primary" />
-          <span className="font-mono text-[10px] text-primary">GAINERS</span>
+          <TrendingUp className="w-3 h-3 text-terminal-green" />
+          <span className="font-mono text-[10px] text-terminal-green">GAINERS</span>
         </div>
         {gainers.map(renderRow)}
 

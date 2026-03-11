@@ -14,8 +14,7 @@ export default function OrderBook({ ticker, price }: OrderBookProps) {
 
   const maxSize = Math.max(...book.bids.map(b => b.size), ...book.asks.map(a => a.size));
   const spread = book.asks[0] && book.bids[0] ? (book.asks[0].price - book.bids[0].price).toFixed(2) : '0.00';
-  const isCrypto = ticker.includes('-');
-  const decimals = isCrypto ? 2 : 2;
+  const decimals = 2;
 
   return (
     <div className="panel flex flex-col h-full">
@@ -25,7 +24,7 @@ export default function OrderBook({ ticker, price }: OrderBookProps) {
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col text-[10px] font-mono">
-        {/* Asks (reversed so lowest ask at bottom) */}
+        {/* Asks */}
         <div className="flex-1 overflow-hidden flex flex-col justify-end px-2 py-1">
           {[...book.asks].reverse().map((level, i) => (
             <div key={`a-${i}`} className="flex items-center h-5 relative">
@@ -33,7 +32,7 @@ export default function OrderBook({ ticker, price }: OrderBookProps) {
                 className="absolute right-0 top-0 h-full opacity-20"
                 style={{
                   width: `${(level.size / maxSize) * 100}%`,
-                  backgroundColor: 'hsl(0, 100%, 60%)',
+                  backgroundColor: '#ff4d6d',
                 }}
               />
               <span className="w-16 text-right price-down relative z-10">{level.price.toFixed(decimals)}</span>
@@ -56,7 +55,7 @@ export default function OrderBook({ ticker, price }: OrderBookProps) {
                 className="absolute right-0 top-0 h-full opacity-20"
                 style={{
                   width: `${(level.size / maxSize) * 100}%`,
-                  backgroundColor: 'hsl(155, 100%, 50%)',
+                  backgroundColor: '#00d395',
                 }}
               />
               <span className="w-16 text-right price-up relative z-10">{level.price.toFixed(decimals)}</span>

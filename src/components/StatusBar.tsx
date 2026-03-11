@@ -23,7 +23,7 @@ export default function StatusBar({ soundEnabled, onSoundToggle }: StatusBarProp
   const statusColor = status === 'MARKET OPEN' ? 'price-up' : status === 'PRE-MARKET' || status === 'AFTER-HOURS' ? 'text-terminal-yellow' : 'text-muted-foreground';
 
   return (
-    <div className="w-full bg-card border-t border-border h-7 flex items-center justify-between px-4 font-mono text-[10px]">
+    <div className="w-full border-t border-border h-7 flex items-center justify-between px-4 font-mono text-[10px]" style={{ background: 'rgba(19, 20, 43, 0.8)', backdropFilter: 'blur(20px)' }}>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-primary pulse-glow" />
