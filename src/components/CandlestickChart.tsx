@@ -150,9 +150,9 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
 
   return (
     <div className="panel flex flex-col h-full">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-sm font-semibold text-foreground">{ticker}</span>
+      <div className="flex flex-wrap items-center justify-between px-3 py-2 border-b border-border gap-2">
+        <div className="flex items-center gap-2 md:gap-3 overflow-x-auto mobile-scroll">
+          <span className="font-mono text-sm font-semibold text-foreground shrink-0">{ticker}</span>
           <TimeframeSelector selected={timeframe} onChange={setTimeframe} />
         </div>
         <IndicatorToggles

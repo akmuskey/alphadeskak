@@ -18,7 +18,7 @@ export default function IndicatorToggles({ sma20, sma50, bollinger, onToggle }: 
         <button
           key={item.key}
           onClick={() => onToggle(item.key)}
-          className={`font-mono text-xs px-2.5 py-1 border transition-all rounded-lg ${
+          className={`font-mono text-[11px] md:text-xs px-1.5 md:px-2.5 py-0.5 md:py-1 border transition-all rounded-lg ${
             item.active
               ? 'border-border text-foreground'
               : 'border-border text-muted-foreground hover:text-foreground hover:shadow-[0_0_15px_rgba(123,97,255,0.4)] bg-secondary'

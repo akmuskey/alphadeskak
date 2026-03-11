@@ -34,7 +34,7 @@ export default function AlphaDesk() {
   }, []);
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden relative">
+    <div className="h-screen w-screen flex flex-col overflow-hidden relative max-w-full">
       {/* Aurora background - animated purple/cyan blobs */}
       <div className="aurora-bg" />
       {/* Dot grid overlay */}
@@ -45,34 +45,40 @@ export default function AlphaDesk() {
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full">
         {/* Top bar */}
-        <div className="flex items-center justify-between px-2 py-1.5 border-b border-border" style={{ background: 'rgba(19, 20, 43, 0.8)', backdropFilter: 'blur(20px)' }}>
+        <div className="flex items-center justify-between px-2 py-1.5 border-b border-border gap-2" style={{ background: 'rgba(19, 20, 43, 0.8)', backdropFilter: 'blur(20px)' }}>
           <Logo />
-          <SearchBar onSearch={handleSearch} currentTicker={selectedTicker} />
+          <div className="flex-1 min-w-0 hidden md:block">
+            <SearchBar onSearch={handleSearch} currentTicker={selectedTicker} />
+          </div>
           <WallStreetClock />
+        </div>
+        {/* Mobile search bar */}
+        <div className="md:hidden px-2 py-1 border-b border-border" style={{ background: 'rgba(19, 20, 43, 0.8)' }}>
+          <SearchBar onSearch={handleSearch} currentTicker={selectedTicker} />
         </div>
 
         {/* Ticker bar */}
         <TickerBar prices={prices} flashMap={flashMap} onSelect={handleSelectTicker} />
 
         {/* Main content */}
-        <div className="flex-1 flex overflow-hidden min-h-0 gap-2 p-2">
-          {/* Left sidebar */}
-          <div className="w-[260px] shrink-0 flex flex-col gap-2">
-            <div className="flex-1 min-h-0">
+        <div className="flex-1 flex overflow-hidden min-h-0 gap-2 p-2 md:flex-row flex-col md:overflow-hidden overflow-y-auto mobile-scroll">
+          {/* Center chart - first on mobile */}
+          <div className="flex-1 min-w-0 md:order-none order-1 min-h-[350px] md:min-h-0">
+            <CandlestickChart ticker={selectedTicker} />
+          </div>
+
+          {/* Left sidebar - reordered on mobile */}
+          <div className="md:w-[260px] w-full md:shrink-0 flex md:flex-col flex-col gap-2 md:order-first order-3">
+            <div className="md:flex-1 min-h-0 order-2">
               <PortfolioTracker prices={prices} />
             </div>
-            <div className="flex-1 min-h-0">
+            <div className="md:flex-1 min-h-0 order-1">
               <MarketMovers prices={prices} onSelect={handleSelectTicker} />
             </div>
           </div>
 
-          {/* Center chart */}
-          <div className="flex-1 min-w-0">
-            <CandlestickChart ticker={selectedTicker} />
-          </div>
-
           {/* Right sidebar */}
-          <div className="w-[280px] shrink-0">
+          <div className="md:w-[280px] w-full md:shrink-0 order-2">
             <OrderBook ticker={selectedTicker} price={prices[selectedTicker]} />
           </div>
         </div>

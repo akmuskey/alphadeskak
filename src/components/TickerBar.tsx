@@ -33,7 +33,7 @@ export default function TickerBar({ prices, flashMap, onSelect }: TickerBarProps
   const doubled = [...items, ...items];
 
   return (
-    <div className="w-full border-b overflow-hidden h-9 flex items-center" style={{ background: 'rgba(123, 97, 255, 0.08)', backdropFilter: 'blur(20px)', borderColor: 'rgba(123, 97, 255, 0.2)' }}>
+    <div className="w-full border-b overflow-hidden h-9 md:h-9 flex items-center" style={{ background: 'rgba(123, 97, 255, 0.08)', backdropFilter: 'blur(20px)', borderColor: 'rgba(123, 97, 255, 0.2)' }}>
       <div className="flex animate-marquee whitespace-nowrap">
         {doubled.map((t, i) => {
           const up = t.changePercent >= 0;
@@ -42,7 +42,7 @@ export default function TickerBar({ prices, flashMap, onSelect }: TickerBarProps
             <button
               key={`${t.symbol}-${i}`}
               onClick={() => onSelect(t.symbol)}
-              className={`inline-flex items-center gap-2 px-4 font-mono text-xs hover:bg-primary/10 transition-colors ${
+              className={`inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 font-mono text-[11px] md:text-xs hover:bg-primary/10 transition-colors ${
                 flash === 'up' ? 'flash-green' : flash === 'down' ? 'flash-red' : ''
               }`}
               style={{ borderRight: '1px solid rgba(123, 97, 255, 0.5)' }}

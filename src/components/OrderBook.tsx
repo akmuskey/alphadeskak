@@ -23,7 +23,7 @@ export default function OrderBook({ ticker, price }: OrderBookProps) {
         <span className="sim-badge">SIM</span>
       </div>
 
-      <div className="flex-1 overflow-hidden flex flex-col text-[10px] font-mono">
+      <div className="flex-1 overflow-hidden flex flex-col text-[11px] md:text-[10px] font-mono">
         {/* Asks */}
         <div className="flex-1 overflow-hidden flex flex-col justify-end px-2 py-1">
           {[...book.asks].reverse().map((level, i) => (
