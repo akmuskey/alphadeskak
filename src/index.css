@@ -214,4 +214,30 @@
     border-color: transparent;
     border-radius: 999px;
   }
+
+  /* Mobile scroll helper */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Mobile responsive overrides */
+@media (max-width: 767px) {
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+  }
+
+  .panel {
+    border-radius: 8px;
+  }
+
+  /* Ensure minimum readable font size */
+  .font-mono {
+    font-size: max(11px, inherit);
+  }
 }

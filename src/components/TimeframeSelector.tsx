@@ -7,12 +7,12 @@ interface TimeframeSelectorProps {
 
 export default function TimeframeSelector({ selected, onChange }: TimeframeSelectorProps) {
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1 flex-wrap">
       {TIMEFRAMES.map(tf => (
         <button
           key={tf}
           onClick={() => onChange(tf)}
-          className={`font-mono text-xs px-2.5 py-1 border transition-all ${
+          className={`font-mono text-[11px] md:text-xs px-2 md:px-2.5 py-0.5 md:py-1 border transition-all ${
             selected === tf
               ? 'text-white font-medium shadow-[0_0_15px_rgba(123,97,255,0.5)]'
               : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:shadow-[0_0_15px_rgba(123,97,255,0.4)] rounded-lg'

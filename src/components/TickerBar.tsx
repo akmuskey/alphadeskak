@@ -42,7 +42,7 @@ export default function TickerBar({ prices, flashMap, onSelect }: TickerBarProps
             <button
               key={`${t.symbol}-${i}`}
               onClick={() => onSelect(t.symbol)}
-              className={`inline-flex items-center gap-2 px-4 font-mono text-xs hover:bg-primary/10 transition-colors ${
+              className={`inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 font-mono text-[11px] md:text-xs hover:bg-primary/10 transition-colors ${
                 flash === 'up' ? 'flash-green' : flash === 'down' ? 'flash-red' : ''
               }`}
               style={{ borderRight: '1px solid rgba(123, 97, 255, 0.5)' }}

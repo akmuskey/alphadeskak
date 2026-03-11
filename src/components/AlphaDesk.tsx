@@ -45,10 +45,16 @@ export default function AlphaDesk() {
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full">
         {/* Top bar */}
-        <div className="flex items-center justify-between px-2 py-1.5 border-b border-border" style={{ background: 'rgba(19, 20, 43, 0.8)', backdropFilter: 'blur(20px)' }}>
+        <div className="flex items-center justify-between px-2 py-1.5 border-b border-border gap-2" style={{ background: 'rgba(19, 20, 43, 0.8)', backdropFilter: 'blur(20px)' }}>
           <Logo />
-          <SearchBar onSearch={handleSearch} currentTicker={selectedTicker} />
+          <div className="flex-1 min-w-0 hidden md:block">
+            <SearchBar onSearch={handleSearch} currentTicker={selectedTicker} />
+          </div>
           <WallStreetClock />
+        </div>
+        {/* Mobile search bar */}
+        <div className="md:hidden px-2 py-1 border-b border-border" style={{ background: 'rgba(19, 20, 43, 0.8)' }}>
+          <SearchBar onSearch={handleSearch} currentTicker={selectedTicker} />
         </div>
 
         {/* Ticker bar */}
