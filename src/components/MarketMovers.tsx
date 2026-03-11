@@ -77,8 +77,22 @@ export default function MarketMovers({ prices, onSelect }: MarketMoversProps) {
     const up = hasRealData
       ? realData[realData.length - 1] >= realData[0]
       : t.changePercent >= 0;
-    // Flat line fallback: use current price repeated
-    const sparkData = hasRealData ? realData : [t.price, t.price];
+    // Generate realistic simulated sparkline as fallback
+    const sparkData = hasRealData ? realData : (() => {
+      const pts = 24;
+      const base = t.price * (1 - Math.abs(t.changePercent) / 100);
+      const direction = t.changePercent >= 0 ? 1 : -1;
+      const range = Math.abs(t.changePercent) / 100 * t.price;
+      const result: number[] = [];
+      let p = base;
+      for (let i = 0; i < pts; i++) {
+        const trend = (i / pts) * range * direction;
+        const noise = (Math.sin(i * 1.7 + t.symbol.charCodeAt(0)) * 0.3 + Math.cos(i * 2.3 + t.symbol.charCodeAt(1)) * 0.2) * range * 0.4;
+        p = base + trend + noise;
+        result.push(p);
+      }
+      return result;
+    })();
     
     return (
       <button

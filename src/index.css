@@ -77,18 +77,18 @@
     animation: auroraMove 12s ease-in-out infinite alternate;
   }
   .aurora-bg::before {
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, #7b61ff 0%, transparent 70%);
-    top: -10%;
-    left: 10%;
+    width: 800px;
+    height: 800px;
+    background: #7b61ff;
+    top: -200px;
+    left: -100px;
   }
   .aurora-bg::after {
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, #00d4ff 0%, transparent 70%);
-    bottom: -10%;
-    right: 10%;
+    width: 700px;
+    height: 700px;
+    background: #00d4ff;
+    bottom: -200px;
+    right: -100px;
     animation-delay: -6s;
     animation-direction: alternate-reverse;
   }
