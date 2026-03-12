@@ -218,7 +218,7 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
             <div className="font-mono text-xs text-muted-foreground animate-pulse">Loading {ticker} data...</div>
           </div>
         )}
-        <div ref={containerRef} className="w-full h-full" />
+        <div ref={containerRef} className="w-full h-full" style={{ width: '100%', height: '100%' }} />
       </div>
     </div>
   );
