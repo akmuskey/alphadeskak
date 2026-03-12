@@ -21,10 +21,10 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
   const [indicators, setIndicators] = useState({ sma20: false, sma50: false, bollinger: false });
   const { data, loading } = useHistoricalData(ticker, timeframe);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    
-    const chart = createChart(containerRef.current, {
+  const initChart = (container: HTMLDivElement) => {
+    const chart = createChart(container, {
+      width: container.clientWidth,
+      height: container.clientHeight,
       layout: {
         background: { color: 'transparent' },
         textColor: '#8892b0',
@@ -71,22 +71,72 @@ export default function CandlestickChart({ ticker }: CandlestickChartProps) {
     candleRef.current = candleSeries;
     volumeRef.current = volumeSeries;
 
-    const handleResize = () => {
-      if (containerRef.current) {
-        chart.applyOptions({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
-        });
-      }
+    // Force Chrome to recalculate dimensions
+    window.dispatchEvent(new Event('resize'));
+
+    return chart;
+  };
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    let chart: IChartApi | null = null;
+    let ro: ResizeObserver | null = null;
+    let reinitTimeout: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    const setup = () => {
+      if (cancelled || !containerRef.current) return;
+
+      chart = initChart(containerRef.current);
+
+      const handleResize = () => {
+        if (containerRef.current && chart) {
+          chart.applyOptions({
+            width: containerRef.current.clientWidth,
+            height: containerRef.current.clientHeight,
+          });
+        }
+      };
+
+      handleResize();
+      ro = new ResizeObserver(handleResize);
+      ro.observe(containerRef.current!);
+
+      // Chrome blank chart recovery: if container has no visible canvas after 3s, reinit once
+      reinitTimeout = setTimeout(() => {
+        if (cancelled || !containerRef.current) return;
+        const canvas = containerRef.current.querySelector('canvas');
+        if (!canvas || canvas.clientHeight === 0 || canvas.clientWidth === 0) {
+          // Destroy and reinitialize
+          ro?.disconnect();
+          try { chart?.remove(); } catch {}
+          chart = initChart(containerRef.current!);
+          const handleResize2 = () => {
+            if (containerRef.current && chart) {
+              chart.applyOptions({
+                width: containerRef.current.clientWidth,
+                height: containerRef.current.clientHeight,
+              });
+            }
+          };
+          handleResize2();
+          ro = new ResizeObserver(handleResize2);
+          ro.observe(containerRef.current!);
+          window.dispatchEvent(new Event('resize'));
+        }
+      }, 3000);
     };
-    
-    handleResize();
-    const ro = new ResizeObserver(handleResize);
-    ro.observe(containerRef.current);
+
+    // Delay init slightly for Chrome DOM readiness
+    const initDelay = setTimeout(setup, 100);
 
     return () => {
-      ro.disconnect();
-      chart.remove();
+      cancelled = true;
+      clearTimeout(initDelay);
+      if (reinitTimeout) clearTimeout(reinitTimeout);
+      ro?.disconnect();
+      try { chart?.remove(); } catch {}
     };
   }, []);
 
