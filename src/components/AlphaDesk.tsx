@@ -72,14 +72,14 @@ export default function AlphaDesk() {
 
           {/* Left sidebar - reordered on mobile */}
           <div className="md:w-[260px] w-full md:shrink-0 flex md:flex-col flex-col gap-2 md:order-first order-3">
-            <div className="md:flex-1 min-h-0 order-2">
-              <PortfolioTracker prices={prices} />
-            </div>
             <div className="md:flex-1 min-h-0 order-1">
               <MarketMovers prices={prices} onSelect={handleSelectTicker} />
             </div>
-            <div className="shrink-0 order-3">
+            <div className="shrink-0 order-2">
               <SentimentGauge score={sentimentScore} />
+            </div>
+            <div className="shrink-0 order-3">
+              <PortfolioTracker prices={prices} />
             </div>
           </div>
 

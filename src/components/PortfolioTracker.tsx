@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { TickerPrice } from '@/lib/constants';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -16,7 +16,26 @@ const DONUT_COLORS = [
 export default function PortfolioTracker({ prices }: PortfolioTrackerProps) {
   const { positions, addPosition, removePosition } = usePortfolio();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ ticker: '', quantity: '', avgPrice: '' });
+  const [expanded, setExpanded] = useState(positions.length > 0);
+
+  // Auto-collapse when all positions removed
+  useEffect(() => {
+    if (positions.length === 0) {
+      setExpanded(false);
+      setShowForm(false);
+    } else {
+      setExpanded(true);
+    }
+  }, [positions.length]);
+
+  const handlePlusClick = () => {
+    if (!expanded && positions.length === 0) {
+      setExpanded(true);
+      setShowForm(true);
+    } else {
+      setShowForm(!showForm);
+    }
+  };
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +45,8 @@ export default function PortfolioTracker({ prices }: PortfolioTrackerProps) {
       setShowForm(false);
     }
   };
+
+  const [form, setForm] = useState({ ticker: '', quantity: '', avgPrice: '' });
 
   const portfolioData = positions.map(pos => {
     const current = prices[pos.ticker]?.price || pos.avgPrice;
@@ -42,96 +63,95 @@ export default function PortfolioTracker({ prices }: PortfolioTrackerProps) {
   const donutData = portfolioData.map(p => ({ name: p.ticker, value: p.value }));
 
   return (
-    <div className="panel flex flex-col h-full">
+    <div className="panel flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span className="font-mono text-xs text-foreground font-medium">PORTFOLIO</span>
-        <button onClick={() => setShowForm(!showForm)} className="text-primary hover:text-primary/80 hover:shadow-[0_0_15px_rgba(123,97,255,0.4)] transition-all rounded-full p-0.5">
+        <button onClick={handlePlusClick} className="text-primary hover:text-primary/80 hover:shadow-[0_0_15px_rgba(123,97,255,0.4)] transition-all rounded-full p-0.5">
           <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleAdd} className="p-2 border-b border-border space-y-1">
-          <input
-            value={form.ticker} onChange={e => setForm({ ...form, ticker: e.target.value })}
-            placeholder="Ticker" className="w-full font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
-          />
-          <div className="flex gap-1">
-            <input
-              value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })}
-              placeholder="Qty" type="number" className="w-1/2 font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
-            />
-            <input
-              value={form.avgPrice} onChange={e => setForm({ ...form, avgPrice: e.target.value })}
-              placeholder="Avg $" type="number" step="0.01" className="w-1/2 font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
-            />
-          </div>
-          <button type="submit" className="w-full font-mono text-[10px] text-white py-1 rounded-md active-pill border-0">ADD</button>
-        </form>
-      )}
-
-      {positions.length > 0 && (
+      {!expanded && !showForm ? null : (
         <>
-          <div className="px-3 py-2 border-b border-border">
-            <div className="flex justify-between items-center">
-              <span className="font-mono text-[10px] text-muted-foreground">Total Value</span>
-              <span className="font-mono text-xs text-foreground">${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-mono text-[10px] text-muted-foreground">P&L</span>
-              <span className={`font-mono text-xs ${totalPnl >= 0 ? 'price-up' : 'price-down'}`}>
-                {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          {donutData.length > 0 && (
-            <div className="h-24 px-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={donutData} cx="50%" cy="50%" innerRadius={20} outerRadius={35} dataKey="value" strokeWidth={0}>
-                    {donutData.map((_, i) => (
-                      <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+          {showForm && (
+            <form onSubmit={handleAdd} className="p-2 border-b border-border space-y-1">
+              <input
+                value={form.ticker} onChange={e => setForm({ ...form, ticker: e.target.value })}
+                placeholder="Ticker" className="w-full font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
+              />
+              <div className="flex gap-1">
+                <input
+                  value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })}
+                  placeholder="Qty" type="number" className="w-1/2 font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
+                />
+                <input
+                  value={form.avgPrice} onChange={e => setForm({ ...form, avgPrice: e.target.value })}
+                  placeholder="Avg $" type="number" step="0.01" className="w-1/2 font-mono text-[10px] bg-secondary border border-border px-2 py-1 text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:border-primary"
+                />
+              </div>
+              <button type="submit" className="w-full font-mono text-[10px] text-white py-1 rounded-md active-pill border-0">ADD</button>
+            </form>
           )}
+
+          {positions.length > 0 && (
+            <>
+              <div className="px-3 py-2 border-b border-border">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[10px] text-muted-foreground">Total Value</span>
+                  <span className="font-mono text-xs text-foreground">${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[10px] text-muted-foreground">P&L</span>
+                  <span className={`font-mono text-xs ${totalPnl >= 0 ? 'price-up' : 'price-down'}`}>
+                    {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {donutData.length > 0 && (
+                <div className="h-24 px-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={donutData} cx="50%" cy="50%" innerRadius={20} outerRadius={35} dataKey="value" strokeWidth={0}>
+                        {donutData.map((_, i) => (
+                          <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="flex-1 overflow-auto">
+            {portfolioData.map(pos => (
+              <div key={pos.id} className="flex items-center justify-between px-3 py-1.5 border-b border-border hover:bg-primary/10 group transition-colors">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] text-foreground font-medium">{pos.ticker}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground">{pos.quantity}x</span>
+                  </div>
+                  <div className="font-mono text-[10px] text-muted-foreground">
+                    ${pos.current.toFixed(2)}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`font-mono text-[10px] ${pos.pnl >= 0 ? 'price-up' : 'price-down'}`}>
+                    {pos.pnl >= 0 ? '+' : ''}${pos.pnl.toFixed(2)}
+                  </div>
+                  <div className={`font-mono text-[10px] ${pos.pnlPct >= 0 ? 'price-up' : 'price-down'}`}>
+                    {pos.pnlPct >= 0 ? '+' : ''}{pos.pnlPct.toFixed(1)}%
+                  </div>
+                </div>
+                <button onClick={() => removePosition(pos.id)} className="ml-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
         </>
       )}
-
-      <div className="flex-1 overflow-auto">
-        {portfolioData.map(pos => (
-          <div key={pos.id} className="flex items-center justify-between px-3 py-1.5 border-b border-border hover:bg-primary/10 group transition-colors">
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] text-foreground font-medium">{pos.ticker}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">{pos.quantity}x</span>
-              </div>
-              <div className="font-mono text-[10px] text-muted-foreground">
-                ${pos.current.toFixed(2)}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className={`font-mono text-[10px] ${pos.pnl >= 0 ? 'price-up' : 'price-down'}`}>
-                {pos.pnl >= 0 ? '+' : ''}${pos.pnl.toFixed(2)}
-              </div>
-              <div className={`font-mono text-[10px] ${pos.pnlPct >= 0 ? 'price-up' : 'price-down'}`}>
-                {pos.pnlPct >= 0 ? '+' : ''}{pos.pnlPct.toFixed(1)}%
-              </div>
-            </div>
-            <button onClick={() => removePosition(pos.id)} className="ml-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-              <X className="w-3 h-3" />
-            </button>
-          </div>
-        ))}
-        {positions.length === 0 && (
-          <div className="px-3 py-6 text-center font-mono text-[10px] text-muted-foreground">
-            No positions. Click + to add.
-          </div>
-        )}
-      </div>
     </div>
   );
 }
