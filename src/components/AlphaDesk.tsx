@@ -78,6 +78,9 @@ export default function AlphaDesk() {
             <div className="md:flex-1 min-h-0 order-1">
               <MarketMovers prices={prices} onSelect={handleSelectTicker} />
             </div>
+            <div className="shrink-0 order-3">
+              <SentimentGauge score={sentimentScore} />
+            </div>
           </div>
 
           {/* Right sidebar */}
