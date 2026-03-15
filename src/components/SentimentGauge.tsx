@@ -82,7 +82,7 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
   });
 
   return (
-    <div className="panel flex flex-col" style={{ maxHeight: 160 }}>
+    <div className="panel flex flex-col" style={{ maxHeight: 200 }}>
       <div className="px-3 py-1.5 border-b border-border">
         <span className="font-mono text-xs text-foreground font-medium">MARKET SENTIMENT</span>
       </div>
