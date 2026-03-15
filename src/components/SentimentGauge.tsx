@@ -90,25 +90,30 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
             strokeLinecap="butt"
           />
 
-          {/* Needle - line from center rotating */}
+          {/* Needle */}
+          {(() => {
+            // Score 0 = left (180deg), 50 = top (90deg), 100 = right (0deg)
+            const angleRad = Math.PI * (1 - needleAngle / 100);
+            const needleLen = 90 * 0.7; // 70% of radius
+            const nx = 100 + needleLen * Math.cos(angleRad);
+            const ny = 100 - needleLen * Math.sin(angleRad);
+            return null; // computed below
+          })()}
           <line
             x1="100"
             y1="100"
-            x2="100"
-            y2="22"
+            x2={100 + 63 * Math.cos(Math.PI * (1 - (needleAngle + 180) / 180))}
+            y2={100 + 63 * Math.sin(Math.PI * (1 - (needleAngle + 180) / 180))}
             stroke={zone.color}
-            strokeWidth="3"
+            strokeWidth="2"
             strokeLinecap="round"
             filter="url(#needleGlow)"
-            transform={`rotate(${needleAngle} 100 100)`}
-            style={{
-              transition: `transform ${transitionDuration} cubic-bezier(0.34, 1.56, 0.64, 1)`,
-            }}
+            opacity={0.95}
           />
 
           {/* Center dot */}
           <circle cx="100" cy="100" r="5" fill={zone.color} opacity={0.9} />
-          <circle cx="100" cy="100" r="2.5" fill="rgba(19,20,43,0.9)" />
+          <circle cx="100" cy="100" r="2.5" fill="rgba(255,255,255,0.8)" />
 
           {/* Score text */}
           <text x="100" y="85" textAnchor="middle" fill="white" fontSize="22" fontFamily="'JetBrains Mono', monospace" fontWeight="600">
