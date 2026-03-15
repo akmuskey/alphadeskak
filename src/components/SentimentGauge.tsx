@@ -92,24 +92,22 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
 
           {/* Needle */}
           {(() => {
-            // Score 0 = left (180deg), 50 = top (90deg), 100 = right (0deg)
-            const angleRad = Math.PI * (1 - needleAngle / 100);
-            const needleLen = 90 * 0.7; // 70% of radius
-            const nx = 100 + needleLen * Math.cos(angleRad);
-            const ny = 100 - needleLen * Math.sin(angleRad);
-            return null; // computed below
+            // needleAngle: -180 (score 0, left) to 0 (score 100, right)
+            const rad = (needleAngle * Math.PI) / 180;
+            const len = 63; // 70% of radius 90
+            const nx = 100 + len * Math.cos(rad);
+            const ny = 100 + len * Math.sin(rad);
+            return (
+              <line
+                x1="100" y1="100" x2={nx} y2={ny}
+                stroke={zone.color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                filter="url(#needleGlow)"
+                opacity={0.95}
+              />
+            );
           })()}
-          <line
-            x1="100"
-            y1="100"
-            x2={100 + 63 * Math.cos(Math.PI * (1 - (needleAngle + 180) / 180))}
-            y2={100 + 63 * Math.sin(Math.PI * (1 - (needleAngle + 180) / 180))}
-            stroke={zone.color}
-            strokeWidth="2"
-            strokeLinecap="round"
-            filter="url(#needleGlow)"
-            opacity={0.95}
-          />
 
           {/* Center dot */}
           <circle cx="100" cy="100" r="5" fill={zone.color} opacity={0.9} />
