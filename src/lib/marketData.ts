@@ -70,6 +70,14 @@ export async function fetchHistoricalData(ticker: string, timeframe: Timeframe):
       }
     }
 
+    // Remove weekend bars for equities (Sat=6, Sun=0) — keeps crypto intact
+    if (!CRYPTO_TICKERS.includes(ticker)) {
+      bars = bars.filter(b => {
+        const day = new Date(b.time * 1000).getUTCDay();
+        return day !== 0 && day !== 6;
+      });
+    }
+
     // Fill gaps for equity 1W data (>9 days = 777600s) — skip crypto
     if (timeframe === '1W' && !CRYPTO_TICKERS.includes(ticker)) {
       bars = fillEquityGaps(bars, 777600);
