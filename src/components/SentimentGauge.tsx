@@ -16,20 +16,15 @@ function getZone(score: number) {
   return ZONES.find(z => score <= z.max) || ZONES[ZONES.length - 1];
 }
 
-// Convert percentage (0-100) to point on upper semicircle (left to right)
-function arcPoint(cx: number, cy: number, r: number, pct: number) {
-  const angle = Math.PI * (1 - pct / 100);
-  return { x: cx + r * Math.cos(angle), y: cy - r * Math.sin(angle) };
-}
-
 export default function SentimentGauge({ score }: SentimentGaugeProps) {
   const [displayScore, setDisplayScore] = useState(0);
-  const [needleAngle, setNeedleAngle] = useState(-90);
+  const [needleAngle, setNeedleAngle] = useState(-180);
   const prevScore = useRef(0);
   const initialMount = useRef(true);
 
   useEffect(() => {
-    const targetAngle = -90 + (score / 100) * 180;
+    // Score 0 = -180deg (left), score 50 = -90deg (top), score 100 = 0deg (right)
+    const targetAngle = -180 + (score / 100) * 180;
     const duration = initialMount.current ? 1500 : 500;
     initialMount.current = false;
 
@@ -53,29 +48,6 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
   const zone = getZone(score);
   const transitionDuration = initialMount.current ? '1.5s' : '0.5s';
 
-  const cx = 100, cy = 95, r = 70;
-
-  const arcSegments = ZONES.map((z, i) => {
-    const p1 = arcPoint(cx, cy, r, z.min);
-    const p2 = arcPoint(cx, cy, r, z.max);
-    const sweepAngle = (z.max - z.min) / 100 * 180;
-    const largeArc = sweepAngle > 180 ? 1 : 0;
-
-    return (
-      <path
-        key={i}
-        d={`M ${p1.x} ${p1.y} A ${r} ${r} 0 ${largeArc} 0 ${p2.x} ${p2.y}`}
-        stroke={z.color}
-        strokeWidth="7"
-        fill="none"
-        strokeLinecap="butt"
-      />
-    );
-  });
-
-  // Needle tip point on the arc
-  const needleTip = arcPoint(cx, cy, r - 14, score);
-
   return (
     <div className="panel flex flex-col" style={{ maxHeight: 220 }}>
       <div className="px-3 py-1.5 border-b border-border">
@@ -85,6 +57,13 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
       <div className="flex-1 flex flex-col items-center justify-center px-2 py-1">
         <svg width="200" height="110" viewBox="0 0 200 110" className="w-full max-w-[200px]">
           <defs>
+            <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#ff4d6d" />
+              <stop offset="25%" stopColor="#ff9500" />
+              <stop offset="50%" stopColor="#ffd700" />
+              <stop offset="75%" stopColor="#00d395" />
+              <stop offset="100%" stopColor="#00d4ff" />
+            </linearGradient>
             <filter id="needleGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
               <feMerge>
@@ -96,43 +75,54 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
 
           {/* Background arc track */}
           <path
-            d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 0 ${cx + r} ${cy}`}
+            d="M 10 100 A 90 90 0 0 1 190 100"
             stroke="rgba(123, 97, 255, 0.1)"
-            strokeWidth="9"
+            strokeWidth="22"
             fill="none"
           />
 
-          {/* Colored segments */}
-          {arcSegments}
+          {/* Colored gradient arc */}
+          <path
+            d="M 10 100 A 90 90 0 0 1 190 100"
+            stroke="url(#arcGradient)"
+            strokeWidth="20"
+            fill="none"
+            strokeLinecap="butt"
+          />
 
-          {/* Needle - pointed triangle from center to arc */}
-          <polygon
-            points={`${needleTip.x},${needleTip.y} ${cx - 3},${cy} ${cx + 3},${cy}`}
-            fill={zone.color}
+          {/* Needle - line from center rotating */}
+          <line
+            x1="100"
+            y1="100"
+            x2="100"
+            y2="22"
+            stroke={zone.color}
+            strokeWidth="3"
+            strokeLinecap="round"
             filter="url(#needleGlow)"
-            opacity={0.95}
+            transform={`rotate(${needleAngle} 100 100)`}
             style={{
-              transition: `all ${transitionDuration} cubic-bezier(0.34, 1.56, 0.64, 1)`,
+              transition: `transform ${transitionDuration} cubic-bezier(0.34, 1.56, 0.64, 1)`,
             }}
           />
 
           {/* Center dot */}
-          <circle cx={cx} cy={cy} r="4.5" fill={zone.color} opacity={0.9} />
-          <circle cx={cx} cy={cy} r="2" fill="rgba(19,20,43,0.9)" />
+          <circle cx="100" cy="100" r="5" fill={zone.color} opacity={0.9} />
+          <circle cx="100" cy="100" r="2.5" fill="rgba(19,20,43,0.9)" />
 
           {/* Score text */}
-          <text x={cx} y={cy - 18} textAnchor="middle" fill="white" fontSize="22" fontFamily="'JetBrains Mono', monospace" fontWeight="600">
+          <text x="100" y="85" textAnchor="middle" fill="white" fontSize="22" fontFamily="'JetBrains Mono', monospace" fontWeight="600">
             {displayScore}
           </text>
 
           {/* Label */}
-          <text x={cx} y={cy - 4} textAnchor="middle" fill={zone.color} fontSize="8" fontFamily="'JetBrains Mono', monospace" fontWeight="500">
+          <text x="100" y="98" textAnchor="middle" fill={zone.color} fontSize="8" fontFamily="'JetBrains Mono', monospace" fontWeight="500">
             {zone.label.toUpperCase()}
           </text>
 
           {/* Scale labels */}
-          <text x={cx - r - 2} y={cy + 12} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="'JetBrains Mono', monospace">0</text>
-          <text x={cx + r + 2} y={cy + 12} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="'JetBrains Mono', monospace">100</text>
+          <text x="10" y="108" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="'JetBrains Mono', monospace">0</text>
+          <text x="190" y="108" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontFamily="'JetBrains Mono', monospace">100</text>
         </svg>
 
         {/* Legend row */}
