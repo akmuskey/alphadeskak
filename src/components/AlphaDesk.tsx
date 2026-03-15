@@ -20,6 +20,7 @@ export default function AlphaDesk() {
   const [selectedTicker, setSelectedTicker] = useState('AAPL');
   const { prices, flashMap } = useSimulatedPrices();
   const { enabled: soundEnabled, setEnabled: setSoundEnabled } = useSoundEffects();
+  const sentimentScore = useSentimentScore(prices);
 
   const handleSearch = useCallback((ticker: string) => {
     if (SEED_PRICES[ticker] || ticker.match(/^[A-Z]{1,5}(-[A-Z]{2,4})?$/)) {
