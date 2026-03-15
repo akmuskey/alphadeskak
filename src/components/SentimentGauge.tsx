@@ -69,7 +69,7 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
         strokeWidth="7"
         fill="none"
         strokeLinecap="butt"
-        opacity={0.9}
+        opacity={1}
       />
     );
   });
