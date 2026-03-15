@@ -10,6 +10,35 @@ function timeframeToRange(tf: Timeframe): { range: string; interval: string } {
   }
 }
 
+const CRYPTO_TICKERS = ['BTC-USD', 'ETH-USD'];
+
+function fillEquityGaps(bars: OHLCVBar[], maxGapSeconds: number): OHLCVBar[] {
+  if (bars.length < 2) return bars;
+  const filled: OHLCVBar[] = [bars[0]];
+  for (let i = 1; i < bars.length; i++) {
+    const prev = bars[i - 1];
+    const curr = bars[i];
+    const diff = curr.time - prev.time;
+    if (diff > maxGapSeconds) {
+      const step = Math.round(diff / Math.round(diff / (maxGapSeconds * 0.55)));
+      const count = Math.round(diff / step) - 1;
+      for (let j = 1; j <= count; j++) {
+        const t = j / (count + 1);
+        filled.push({
+          time: prev.time + j * step,
+          open: prev.close + (curr.open - prev.close) * ((j - 1) / count),
+          close: prev.close + (curr.open - prev.close) * (j / count),
+          high: (prev.high + curr.high) / 2,
+          low: (prev.low + curr.low) / 2,
+          volume: Math.round((prev.volume + curr.volume) / 2),
+        });
+      }
+    }
+    filled.push(curr);
+  }
+  return filled;
+}
+
 export async function fetchHistoricalData(ticker: string, timeframe: Timeframe): Promise<OHLCVBar[]> {
   const { range, interval } = timeframeToRange(timeframe);
   
@@ -27,7 +56,7 @@ export async function fetchHistoricalData(ticker: string, timeframe: Timeframe):
     const timestamps = result.timestamp || [];
     const quote = result.indicators?.quote?.[0] || {};
     
-    const bars: OHLCVBar[] = [];
+    let bars: OHLCVBar[] = [];
     for (let i = 0; i < timestamps.length; i++) {
       if (quote.open?.[i] != null && quote.close?.[i] != null) {
         bars.push({
@@ -40,6 +69,12 @@ export async function fetchHistoricalData(ticker: string, timeframe: Timeframe):
         });
       }
     }
+
+    // Fill gaps for equity 1W data (>9 days = 777600s) — skip crypto
+    if (timeframe === '1W' && !CRYPTO_TICKERS.includes(ticker)) {
+      bars = fillEquityGaps(bars, 777600);
+    }
+
     return bars;
   } catch {
     return generateMockData(ticker, timeframe);
