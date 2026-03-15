@@ -15,10 +15,14 @@ function formatPrice(p: number): string {
 
 function formatDate(ts: number, tf: Timeframe): string {
   const d = new Date(ts * 1000);
-  if (tf === '1D' || tf === '1W') {
+  if (tf === '1D') {
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
   }
-  return `${d.getMonth() + 1}/${d.getDate()}`;
+  if (tf === '1W' || tf === '1M') {
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+  }
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`;
 }
 
 function formatVolume(v: number): string {
