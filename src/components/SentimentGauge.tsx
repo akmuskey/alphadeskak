@@ -82,13 +82,13 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
   });
 
   return (
-    <div className="panel flex flex-col" style={{ maxHeight: 160 }}>
+    <div className="panel flex flex-col" style={{ maxHeight: 200 }}>
       <div className="px-3 py-1.5 border-b border-border">
         <span className="font-mono text-xs text-foreground font-medium">MARKET SENTIMENT</span>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-2 py-1">
-        <svg width="200" height="105" viewBox="0 0 200 105" className="w-full max-w-[200px]">
+      <div className="flex-1 flex items-center justify-center px-2 py-2">
+        <svg width="200" height="115" viewBox="0 0 200 115" className="w-full max-w-[200px]">
           {/* Background arc track */}
           <path
             d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
