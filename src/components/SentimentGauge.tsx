@@ -69,7 +69,7 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
         strokeWidth="7"
         fill="none"
         strokeLinecap="butt"
-        opacity={0.9}
+        opacity={1}
       />
     );
   });
@@ -156,9 +156,9 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
         </svg>
 
         {/* Legend row */}
-        <div className="flex items-center justify-center gap-1.5 px-1 pb-1" style={{ marginTop: -2 }}>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 px-1 pb-1.5" style={{ marginTop: -2 }}>
           {ZONES.map((z, i) => (
-            <span key={i} className="font-mono whitespace-nowrap" style={{ fontSize: '7px', color: z.color, opacity: 0.85 }}>
+            <span key={i} className="font-mono whitespace-nowrap" style={{ fontSize: '9px', color: z.color, letterSpacing: '0.02em' }}>
               {z.short}
             </span>
           ))}
