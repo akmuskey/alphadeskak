@@ -53,7 +53,7 @@ export default function SentimentGauge({ score }: SentimentGaugeProps) {
   const zone = getZone(score);
   const transitionDuration = initialMount.current ? '1.5s' : '0.5s';
 
-  const cx = 100, cy = 85, r = 70;
+  const cx = 100, cy = 95, r = 70;
 
   const arcSegments = ZONES.map((z, i) => {
     const p1 = arcPoint(cx, cy, r, z.min);
