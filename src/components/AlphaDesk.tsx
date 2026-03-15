@@ -11,13 +11,16 @@ import CandlestickChart from './CandlestickChart';
 import OrderBook from './OrderBook';
 import PortfolioTracker from './PortfolioTracker';
 import MarketMovers from './MarketMovers';
+import SentimentGauge from './SentimentGauge';
 import StatusBar from './StatusBar';
 import KeyboardShortcuts from './KeyboardShortcuts';
+import { useSentimentScore } from '@/hooks/useSentimentScore';
 
 export default function AlphaDesk() {
   const [selectedTicker, setSelectedTicker] = useState('AAPL');
   const { prices, flashMap } = useSimulatedPrices();
   const { enabled: soundEnabled, setEnabled: setSoundEnabled } = useSoundEffects();
+  const sentimentScore = useSentimentScore(prices);
 
   const handleSearch = useCallback((ticker: string) => {
     if (SEED_PRICES[ticker] || ticker.match(/^[A-Z]{1,5}(-[A-Z]{2,4})?$/)) {
@@ -74,6 +77,9 @@ export default function AlphaDesk() {
             </div>
             <div className="md:flex-1 min-h-0 order-1">
               <MarketMovers prices={prices} onSelect={handleSelectTicker} />
+            </div>
+            <div className="shrink-0 order-3">
+              <SentimentGauge score={sentimentScore} />
             </div>
           </div>
 
