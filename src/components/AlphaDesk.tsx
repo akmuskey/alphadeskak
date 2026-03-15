@@ -11,8 +11,10 @@ import CandlestickChart from './CandlestickChart';
 import OrderBook from './OrderBook';
 import PortfolioTracker from './PortfolioTracker';
 import MarketMovers from './MarketMovers';
+import SentimentGauge from './SentimentGauge';
 import StatusBar from './StatusBar';
 import KeyboardShortcuts from './KeyboardShortcuts';
+import { useSentimentScore } from '@/hooks/useSentimentScore';
 
 export default function AlphaDesk() {
   const [selectedTicker, setSelectedTicker] = useState('AAPL');
