@@ -14,6 +14,7 @@ import MarketMovers from './MarketMovers';
 import SentimentGauge from './SentimentGauge';
 import StatusBar from './StatusBar';
 import KeyboardShortcuts from './KeyboardShortcuts';
+import StrategyBacktester from './StrategyBacktester';
 import { useSentimentScore } from '@/hooks/useSentimentScore';
 
 export default function AlphaDesk() {
@@ -87,6 +88,11 @@ export default function AlphaDesk() {
           <div className="md:w-[280px] w-full md:shrink-0 order-2">
             <OrderBook ticker={selectedTicker} price={prices[selectedTicker]} />
           </div>
+        </div>
+
+        {/* Strategy Backtester */}
+        <div className="px-2 pb-1 shrink-0">
+          <StrategyBacktester selectedTicker={selectedTicker} />
         </div>
 
         {/* Status bar */}
