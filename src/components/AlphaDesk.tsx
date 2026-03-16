@@ -90,6 +90,11 @@ export default function AlphaDesk() {
           </div>
         </div>
 
+        {/* Strategy Backtester */}
+        <div className="px-2 pb-1 shrink-0">
+          <StrategyBacktester selectedTicker={selectedTicker} />
+        </div>
+
         {/* Status bar */}
         <StatusBar soundEnabled={soundEnabled} onSoundToggle={() => setSoundEnabled(!soundEnabled)} />
       </div>
