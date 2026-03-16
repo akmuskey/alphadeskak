@@ -1,16 +1,10 @@
 import { useState, useMemo, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Play, TrendingUp, TrendingDown, Activity, Target, BarChart3 } from 'lucide-react';
-import { OHLCVBar, SEED_PRICES } from '@/lib/constants';
 import { runBacktest, BacktestResult, StrategyType, Trade } from '@/lib/backtester';
-import { useHistoricalData } from '@/hooks/useHistoricalData';
+import { fetchBacktesterData } from '@/lib/marketData';
 
 const DATE_RANGES = ['3M', '6M', '1Y', '2Y'] as const;
 type DateRange = typeof DATE_RANGES[number];
-
-function getTimeframeForRange(range: DateRange) {
-  // Map backtester ranges to chart timeframes for data fetching
-  return range === '3M' ? '3M' : '1Y';
-}
 
 function getDaysForRange(range: DateRange): number {
   switch (range) {
@@ -19,29 +13,6 @@ function getDaysForRange(range: DateRange): number {
     case '1Y': return 252;
     case '2Y': return 504;
   }
-}
-
-function generateExtendedFallback(ticker: string, days: number): OHLCVBar[] {
-  const basePrice = SEED_PRICES[ticker] || 100;
-  const now = Math.floor(Date.now() / 1000);
-  const step = 86400;
-  const bars: OHLCVBar[] = [];
-  let price = basePrice * 0.85;
-
-  for (let i = 0; i < days; i++) {
-    const change = (Math.random() - 0.48) * price * 0.02;
-    const open = price;
-    const close = price + change;
-    const high = Math.max(open, close) + Math.random() * price * 0.005;
-    const low = Math.min(open, close) - Math.random() * price * 0.005;
-    bars.push({
-      time: now - (days - i) * step,
-      open, high, low, close,
-      volume: Math.floor(Math.random() * 10000000) + 1000000,
-    });
-    price = close;
-  }
-  return bars;
 }
 
 function formatDate(timestamp: number): string {
