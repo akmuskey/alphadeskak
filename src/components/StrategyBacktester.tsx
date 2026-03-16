@@ -272,9 +272,9 @@ export default function StrategyBacktester({ selectedTicker }: { selectedTicker:
               {/* Metrics Row */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                 <MetricCard label="Total Return" value={`${result.totalReturn >= 0 ? '+' : ''}${result.totalReturn.toFixed(2)}%`} color={returnColor} icon={TrendingUp} />
-                <MetricCard label="Sharpe Ratio" value={result.sharpeRatio.toFixed(2)} color={sharpeColor} icon={BarChart3} />
+                <MetricCard label="Sharpe Ratio" value={result.sharpeRatio !== null ? result.sharpeRatio.toFixed(2) : '—'} color={sharpeColor} icon={BarChart3} />
                 <MetricCard label="Max Drawdown" value={`${result.maxDrawdown.toFixed(2)}%`} color="text-[hsl(var(--terminal-red))]" icon={TrendingDown} />
-                <MetricCard label="Win Rate" value={`${result.winRate.toFixed(1)}%`} color="text-foreground" icon={Target} />
+                <MetricCard label="Win Rate" value={result.winRate !== null ? `${result.winRate.toFixed(1)}%` : '—'} color="text-foreground" icon={Target} />
                 <MetricCard label="Trades" value={`${result.numTrades}`} color="text-foreground" icon={Activity} />
               </div>
 
