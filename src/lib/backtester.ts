@@ -13,9 +13,9 @@ export interface Trade {
 
 export interface BacktestResult {
   totalReturn: number;
-  sharpeRatio: number;
+  sharpeRatio: number | null;
   maxDrawdown: number;
-  winRate: number;
+  winRate: number | null;
   numTrades: number;
   trades: Trade[];
   equityCurve: { time: number; value: number; signal?: 'buy' | 'sell' }[];
@@ -39,7 +39,6 @@ function calculateRSIArray(closes: number[], period: number = 14): (number | nul
   const result: (number | null)[] = new Array(closes.length).fill(null);
   if (closes.length < period + 1) return result;
 
-  // Initial average gain/loss
   let avgGain = 0;
   let avgLoss = 0;
   for (let i = 1; i <= period; i++) {
@@ -52,7 +51,6 @@ function calculateRSIArray(closes: number[], period: number = 14): (number | nul
 
   result[period] = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
 
-  // Wilder's smoothing
   for (let i = period + 1; i < closes.length; i++) {
     const change = closes[i] - closes[i - 1];
     const gain = change > 0 ? change : 0;
@@ -84,24 +82,18 @@ export function runBacktest(data: OHLCVBar[], strategy: StrategyType): BacktestR
     }
   } else {
     const rsi = calculateRSIArray(closes, 14);
-    let wasBelow30 = false;
-    let wasAbove70 = false;
-    for (let i = 0; i < data.length; i++) {
-      if (rsi[i] === null) continue;
-      if (rsi[i]! < 30) wasBelow30 = true;
-      if (rsi[i]! > 70) wasAbove70 = true;
-      if (wasBelow30 && rsi[i]! >= 30) {
-        signals[i] = 'buy';
-        wasBelow30 = false;
-      }
-      if (wasAbove70 && rsi[i]! <= 70) {
-        signals[i] = 'sell';
-        wasAbove70 = false;
-      }
+    for (let i = 1; i < data.length; i++) {
+      if (rsi[i] === null || rsi[i - 1] === null) continue;
+      const prevRSI = rsi[i - 1]!;
+      const currRSI = rsi[i]!;
+      // BUY: RSI crosses up through 30
+      if (prevRSI < 30 && currRSI >= 30) signals[i] = 'buy';
+      // SELL: RSI crosses up through 70 or crosses back down below 70
+      if ((prevRSI < 70 && currRSI >= 70) || (prevRSI >= 70 && currRSI < 70)) signals[i] = 'sell';
     }
   }
 
-  // Execute trades
+  // Execute trades — track portfolio value at EVERY candle
   const trades: Trade[] = [];
   let position: { entryPrice: number; entryDate: number } | null = null;
   let cash = INITIAL_CAPITAL;
@@ -138,6 +130,7 @@ export function runBacktest(data: OHLCVBar[], strategy: StrategyType): BacktestR
       sig = 'sell';
     }
 
+    // Portfolio value at every candle: cash + shares * current price
     const portfolioValue = cash + shares * price;
     equityCurve.push({ time: times[i], value: portfolioValue, signal: sig });
   }
@@ -162,19 +155,20 @@ export function runBacktest(data: OHLCVBar[], strategy: StrategyType): BacktestR
   const finalValue = equityCurve.length > 0 ? equityCurve[equityCurve.length - 1].value : INITIAL_CAPITAL;
   const totalReturn = ((finalValue - INITIAL_CAPITAL) / INITIAL_CAPITAL) * 100;
 
-  // Sharpe Ratio
+  // Daily returns for Sharpe
   const dailyReturns: number[] = [];
   for (let i = 1; i < equityCurve.length; i++) {
     dailyReturns.push((equityCurve[i].value - equityCurve[i - 1].value) / equityCurve[i - 1].value);
   }
-  const meanReturn = dailyReturns.length > 0 ? dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length : 0;
-  const riskFreeDaily = 0.02 / 252;
-  const stdDev = dailyReturns.length > 1
-    ? Math.sqrt(dailyReturns.reduce((sum, r) => sum + (r - meanReturn) ** 2, 0) / (dailyReturns.length - 1))
-    : 0;
-  const sharpeRatio = stdDev > 0
-    ? Math.round(((meanReturn - riskFreeDaily) / stdDev * Math.sqrt(252)) * 100) / 100
-    : 0;
+
+  let sharpeRatio: number | null = null;
+  if (dailyReturns.length >= 10) {
+    const meanReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+    const stdDev = Math.sqrt(dailyReturns.reduce((sum, r) => sum + (r - meanReturn) ** 2, 0) / (dailyReturns.length - 1));
+    sharpeRatio = stdDev > 0
+      ? Math.round((meanReturn / stdDev * Math.sqrt(252)) * 100) / 100
+      : 0;
+  }
 
   // Max Drawdown
   let peak = INITIAL_CAPITAL;
@@ -186,9 +180,9 @@ export function runBacktest(data: OHLCVBar[], strategy: StrategyType): BacktestR
   }
   const maxDrawdown = Math.round(maxDD * 10000) / 100;
 
-  // Win Rate
+  // Win Rate — null if fewer than 2 completed trades
   const wins = trades.filter(t => t.result === 'win').length;
-  const winRate = trades.length > 0 ? Math.round((wins / trades.length) * 10000) / 100 : 0;
+  const winRate = trades.length >= 2 ? Math.round((wins / trades.length) * 10000) / 100 : null;
 
   return {
     totalReturn: Math.round(totalReturn * 100) / 100,

@@ -1,16 +1,10 @@
 import { useState, useMemo, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Play, TrendingUp, TrendingDown, Activity, Target, BarChart3 } from 'lucide-react';
-import { OHLCVBar, SEED_PRICES } from '@/lib/constants';
 import { runBacktest, BacktestResult, StrategyType, Trade } from '@/lib/backtester';
-import { useHistoricalData } from '@/hooks/useHistoricalData';
+import { fetchBacktesterData } from '@/lib/marketData';
 
 const DATE_RANGES = ['3M', '6M', '1Y', '2Y'] as const;
 type DateRange = typeof DATE_RANGES[number];
-
-function getTimeframeForRange(range: DateRange) {
-  // Map backtester ranges to chart timeframes for data fetching
-  return range === '3M' ? '3M' : '1Y';
-}
 
 function getDaysForRange(range: DateRange): number {
   switch (range) {
@@ -19,29 +13,6 @@ function getDaysForRange(range: DateRange): number {
     case '1Y': return 252;
     case '2Y': return 504;
   }
-}
-
-function generateExtendedFallback(ticker: string, days: number): OHLCVBar[] {
-  const basePrice = SEED_PRICES[ticker] || 100;
-  const now = Math.floor(Date.now() / 1000);
-  const step = 86400;
-  const bars: OHLCVBar[] = [];
-  let price = basePrice * 0.85;
-
-  for (let i = 0; i < days; i++) {
-    const change = (Math.random() - 0.48) * price * 0.02;
-    const open = price;
-    const close = price + change;
-    const high = Math.max(open, close) + Math.random() * price * 0.005;
-    const low = Math.min(open, close) - Math.random() * price * 0.005;
-    bars.push({
-      time: now - (days - i) * step,
-      open, high, low, close,
-      volume: Math.floor(Math.random() * 10000000) + 1000000,
-    });
-    price = close;
-  }
-  return bars;
 }
 
 function formatDate(timestamp: number): string {
@@ -62,7 +33,7 @@ function MetricCard({ label, value, color, icon: Icon }: { label: string; value:
 }
 
 function PnLChart({ result }: { result: BacktestResult }) {
-  const { equityCurve, trades } = result;
+  const { equityCurve } = result;
   if (equityCurve.length === 0) return null;
 
   const values = equityCurve.map(p => p.value);
@@ -71,20 +42,20 @@ function PnLChart({ result }: { result: BacktestResult }) {
   const range = maxVal - minVal || 1;
 
   const w = 800;
-  const h = 200;
+  const h = 220;
   const padX = 0;
-  const padY = 10;
-  const chartW = w - padX * 2;
-  const chartH = h - padY * 2;
+  const padTop = 10;
+  const padBottom = 20; // space for x-axis labels
+  const chartH = h - padTop - padBottom;
 
   const points = equityCurve.map((p, i) => {
-    const x = padX + (i / (equityCurve.length - 1)) * chartW;
-    const y = padY + chartH - ((p.value - minVal) / range) * chartH;
+    const x = padX + (i / (equityCurve.length - 1)) * (w - padX * 2);
+    const y = padTop + chartH - ((p.value - minVal) / range) * chartH;
     return { x, y, ...p };
   });
 
   const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
-  const areaD = pathD + ` L ${points[points.length - 1].x.toFixed(1)} ${h} L ${points[0].x.toFixed(1)} ${h} Z`;
+  const areaD = pathD + ` L ${points[points.length - 1].x.toFixed(1)} ${padTop + chartH} L ${points[0].x.toFixed(1)} ${padTop + chartH} Z`;
 
   const buySignals = points.filter(p => p.signal === 'buy');
   const sellSignals = points.filter(p => p.signal === 'sell');
@@ -95,6 +66,18 @@ function PnLChart({ result }: { result: BacktestResult }) {
   // Grid lines
   const gridLines = 4;
   const gridValues = Array.from({ length: gridLines }, (_, i) => minVal + (range * (i + 1)) / (gridLines + 1));
+
+  // X-axis date labels — pick ~6 evenly spaced
+  const labelCount = 6;
+  const xLabels: { x: number; label: string }[] = [];
+  for (let i = 0; i < labelCount; i++) {
+    const idx = Math.round((i / (labelCount - 1)) * (equityCurve.length - 1));
+    const pt = equityCurve[idx];
+    xLabels.push({
+      x: padX + (idx / (equityCurve.length - 1)) * (w - padX * 2),
+      label: formatDate(pt.time),
+    });
+  }
 
   return (
     <div className="mt-3 rounded-lg border border-border p-3" style={{ background: 'rgba(19, 20, 43, 0.4)' }}>
@@ -112,7 +95,7 @@ function PnLChart({ result }: { result: BacktestResult }) {
         </defs>
         {/* Grid */}
         {gridValues.map((v, i) => {
-          const y = padY + chartH - ((v - minVal) / range) * chartH;
+          const y = padTop + chartH - ((v - minVal) / range) * chartH;
           return (
             <g key={i}>
               <line x1={padX} y1={y} x2={w} y2={y} stroke="rgba(123, 97, 255, 0.1)" strokeWidth="0.5" />
@@ -128,7 +111,7 @@ function PnLChart({ result }: { result: BacktestResult }) {
         <path d={pathD} fill="none" stroke={isPositive ? '#00d395' : '#ff4d6d'} strokeWidth="1.5" filter="url(#lineGlow)" />
         {/* $10k baseline */}
         {(() => {
-          const baseY = padY + chartH - ((10000 - minVal) / range) * chartH;
+          const baseY = padTop + chartH - ((10000 - minVal) / range) * chartH;
           return <line x1={padX} y1={baseY} x2={w} y2={baseY} stroke="rgba(160, 160, 200, 0.3)" strokeWidth="0.5" strokeDasharray="4 3" />;
         })()}
         {/* Buy signals */}
@@ -138,6 +121,12 @@ function PnLChart({ result }: { result: BacktestResult }) {
         {/* Sell signals */}
         {sellSignals.map((p, i) => (
           <polygon key={`s${i}`} points={`${p.x},${p.y - 8} ${p.x - 4},${p.y - 15} ${p.x + 4},${p.y - 15}`} fill="#ff4d6d" opacity="0.9" />
+        ))}
+        {/* X-axis date labels */}
+        {xLabels.map((lbl, i) => (
+          <text key={`xl${i}`} x={lbl.x} y={h - 4} fill="rgba(160, 160, 200, 0.5)" fontSize="8" textAnchor="middle" fontFamily="JetBrains Mono">
+            {lbl.label}
+          </text>
         ))}
       </svg>
     </div>
@@ -197,27 +186,23 @@ export default function StrategyBacktester({ selectedTicker }: { selectedTicker:
   // Sync ticker with parent
   useMemo(() => setTicker(selectedTicker), [selectedTicker]);
 
-  const { data: chartData } = useHistoricalData(ticker, getTimeframeForRange(dateRange));
-
-  const handleRun = useCallback(() => {
+  const handleRun = useCallback(async () => {
     setRunning(true);
     setResult(null);
 
-    // Use setTimeout so the loading state renders
-    setTimeout(() => {
+    try {
       const days = getDaysForRange(dateRange);
-      let bars = chartData.length >= days ? chartData.slice(-days) : chartData;
-      if (bars.length < 60) {
-        bars = generateExtendedFallback(ticker, days);
-      }
+      const bars = await fetchBacktesterData(ticker, days);
       const res = runBacktest(bars, strategy);
       setResult(res);
+    } finally {
       setRunning(false);
-    }, 400);
-  }, [chartData, ticker, strategy, dateRange]);
+    }
+  }, [ticker, strategy, dateRange]);
 
   const returnColor = (result?.totalReturn ?? 0) >= 0 ? 'text-[hsl(var(--terminal-green))]' : 'text-[hsl(var(--terminal-red))]';
-  const sharpeColor = (result?.sharpeRatio ?? 0) >= 1 ? 'text-[hsl(var(--terminal-green))]' : (result?.sharpeRatio ?? 0) >= 0.5 ? 'text-[hsl(var(--terminal-yellow))]' : 'text-[hsl(var(--terminal-red))]';
+  const sharpeVal = result?.sharpeRatio;
+  const sharpeColor = sharpeVal === null ? 'text-muted-foreground' : sharpeVal >= 1 ? 'text-[hsl(var(--terminal-green))]' : sharpeVal >= 0.5 ? 'text-[hsl(var(--terminal-yellow))]' : 'text-[hsl(var(--terminal-red))]';
 
   return (
     <div className="rounded-xl border border-border overflow-hidden" style={{ background: 'rgba(19, 20, 43, 0.6)', backdropFilter: 'blur(20px)' }}>
@@ -305,9 +290,9 @@ export default function StrategyBacktester({ selectedTicker }: { selectedTicker:
               {/* Metrics Row */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                 <MetricCard label="Total Return" value={`${result.totalReturn >= 0 ? '+' : ''}${result.totalReturn.toFixed(2)}%`} color={returnColor} icon={TrendingUp} />
-                <MetricCard label="Sharpe Ratio" value={result.sharpeRatio.toFixed(2)} color={sharpeColor} icon={BarChart3} />
+                <MetricCard label="Sharpe Ratio" value={result.sharpeRatio !== null ? result.sharpeRatio.toFixed(2) : '—'} color={sharpeColor} icon={BarChart3} />
                 <MetricCard label="Max Drawdown" value={`${result.maxDrawdown.toFixed(2)}%`} color="text-[hsl(var(--terminal-red))]" icon={TrendingDown} />
-                <MetricCard label="Win Rate" value={`${result.winRate.toFixed(1)}%`} color="text-foreground" icon={Target} />
+                <MetricCard label="Win Rate" value={result.winRate !== null ? `${result.winRate.toFixed(1)}%` : '—'} color="text-foreground" icon={Target} />
                 <MetricCard label="Trades" value={`${result.numTrades}`} color="text-foreground" icon={Activity} />
               </div>
 
