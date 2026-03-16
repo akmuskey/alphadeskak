@@ -95,7 +95,7 @@ function PnLChart({ result }: { result: BacktestResult }) {
         </defs>
         {/* Grid */}
         {gridValues.map((v, i) => {
-          const y = padY + chartH - ((v - minVal) / range) * chartH;
+          const y = padTop + chartH - ((v - minVal) / range) * chartH;
           return (
             <g key={i}>
               <line x1={padX} y1={y} x2={w} y2={y} stroke="rgba(123, 97, 255, 0.1)" strokeWidth="0.5" />
@@ -111,7 +111,7 @@ function PnLChart({ result }: { result: BacktestResult }) {
         <path d={pathD} fill="none" stroke={isPositive ? '#00d395' : '#ff4d6d'} strokeWidth="1.5" filter="url(#lineGlow)" />
         {/* $10k baseline */}
         {(() => {
-          const baseY = padY + chartH - ((10000 - minVal) / range) * chartH;
+          const baseY = padTop + chartH - ((10000 - minVal) / range) * chartH;
           return <line x1={padX} y1={baseY} x2={w} y2={baseY} stroke="rgba(160, 160, 200, 0.3)" strokeWidth="0.5" strokeDasharray="4 3" />;
         })()}
         {/* Buy signals */}
@@ -121,6 +121,12 @@ function PnLChart({ result }: { result: BacktestResult }) {
         {/* Sell signals */}
         {sellSignals.map((p, i) => (
           <polygon key={`s${i}`} points={`${p.x},${p.y - 8} ${p.x - 4},${p.y - 15} ${p.x + 4},${p.y - 15}`} fill="#ff4d6d" opacity="0.9" />
+        ))}
+        {/* X-axis date labels */}
+        {xLabels.map((lbl, i) => (
+          <text key={`xl${i}`} x={lbl.x} y={h - 4} fill="rgba(160, 160, 200, 0.5)" fontSize="8" textAnchor="middle" fontFamily="JetBrains Mono">
+            {lbl.label}
+          </text>
         ))}
       </svg>
     </div>
