@@ -14,6 +14,7 @@ import MarketMovers from './MarketMovers';
 import SentimentGauge from './SentimentGauge';
 import StatusBar from './StatusBar';
 import KeyboardShortcuts from './KeyboardShortcuts';
+import StrategyBacktester from './StrategyBacktester';
 import { useSentimentScore } from '@/hooks/useSentimentScore';
 
 export default function AlphaDesk() {
