@@ -33,7 +33,7 @@ function MetricCard({ label, value, color, icon: Icon }: { label: string; value:
 }
 
 function PnLChart({ result }: { result: BacktestResult }) {
-  const { equityCurve, trades } = result;
+  const { equityCurve } = result;
   if (equityCurve.length === 0) return null;
 
   const values = equityCurve.map(p => p.value);
@@ -42,20 +42,20 @@ function PnLChart({ result }: { result: BacktestResult }) {
   const range = maxVal - minVal || 1;
 
   const w = 800;
-  const h = 200;
+  const h = 220;
   const padX = 0;
-  const padY = 10;
-  const chartW = w - padX * 2;
-  const chartH = h - padY * 2;
+  const padTop = 10;
+  const padBottom = 20; // space for x-axis labels
+  const chartH = h - padTop - padBottom;
 
   const points = equityCurve.map((p, i) => {
-    const x = padX + (i / (equityCurve.length - 1)) * chartW;
-    const y = padY + chartH - ((p.value - minVal) / range) * chartH;
+    const x = padX + (i / (equityCurve.length - 1)) * (w - padX * 2);
+    const y = padTop + chartH - ((p.value - minVal) / range) * chartH;
     return { x, y, ...p };
   });
 
   const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
-  const areaD = pathD + ` L ${points[points.length - 1].x.toFixed(1)} ${h} L ${points[0].x.toFixed(1)} ${h} Z`;
+  const areaD = pathD + ` L ${points[points.length - 1].x.toFixed(1)} ${padTop + chartH} L ${points[0].x.toFixed(1)} ${padTop + chartH} Z`;
 
   const buySignals = points.filter(p => p.signal === 'buy');
   const sellSignals = points.filter(p => p.signal === 'sell');
@@ -66,6 +66,18 @@ function PnLChart({ result }: { result: BacktestResult }) {
   // Grid lines
   const gridLines = 4;
   const gridValues = Array.from({ length: gridLines }, (_, i) => minVal + (range * (i + 1)) / (gridLines + 1));
+
+  // X-axis date labels — pick ~6 evenly spaced
+  const labelCount = 6;
+  const xLabels: { x: number; label: string }[] = [];
+  for (let i = 0; i < labelCount; i++) {
+    const idx = Math.round((i / (labelCount - 1)) * (equityCurve.length - 1));
+    const pt = equityCurve[idx];
+    xLabels.push({
+      x: padX + (idx / (equityCurve.length - 1)) * (w - padX * 2),
+      label: formatDate(pt.time),
+    });
+  }
 
   return (
     <div className="mt-3 rounded-lg border border-border p-3" style={{ background: 'rgba(19, 20, 43, 0.4)' }}>
