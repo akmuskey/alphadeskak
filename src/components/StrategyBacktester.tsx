@@ -168,27 +168,23 @@ export default function StrategyBacktester({ selectedTicker }: { selectedTicker:
   // Sync ticker with parent
   useMemo(() => setTicker(selectedTicker), [selectedTicker]);
 
-  const { data: chartData } = useHistoricalData(ticker, getTimeframeForRange(dateRange));
-
-  const handleRun = useCallback(() => {
+  const handleRun = useCallback(async () => {
     setRunning(true);
     setResult(null);
 
-    // Use setTimeout so the loading state renders
-    setTimeout(() => {
+    try {
       const days = getDaysForRange(dateRange);
-      let bars = chartData.length >= days ? chartData.slice(-days) : chartData;
-      if (bars.length < 60) {
-        bars = generateExtendedFallback(ticker, days);
-      }
+      const bars = await fetchBacktesterData(ticker, days);
       const res = runBacktest(bars, strategy);
       setResult(res);
+    } finally {
       setRunning(false);
-    }, 400);
-  }, [chartData, ticker, strategy, dateRange]);
+    }
+  }, [ticker, strategy, dateRange]);
 
   const returnColor = (result?.totalReturn ?? 0) >= 0 ? 'text-[hsl(var(--terminal-green))]' : 'text-[hsl(var(--terminal-red))]';
-  const sharpeColor = (result?.sharpeRatio ?? 0) >= 1 ? 'text-[hsl(var(--terminal-green))]' : (result?.sharpeRatio ?? 0) >= 0.5 ? 'text-[hsl(var(--terminal-yellow))]' : 'text-[hsl(var(--terminal-red))]';
+  const sharpeVal = result?.sharpeRatio;
+  const sharpeColor = sharpeVal === null ? 'text-muted-foreground' : sharpeVal >= 1 ? 'text-[hsl(var(--terminal-green))]' : sharpeVal >= 0.5 ? 'text-[hsl(var(--terminal-yellow))]' : 'text-[hsl(var(--terminal-red))]';
 
   return (
     <div className="rounded-xl border border-border overflow-hidden" style={{ background: 'rgba(19, 20, 43, 0.6)', backdropFilter: 'blur(20px)' }}>
